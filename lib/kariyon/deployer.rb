@@ -41,6 +41,7 @@ module Kariyon
       return File.directory?(f) && File.exist?(File.join(f, '.kariyon'))
     end
 
+    private
     def self.destroot
       case Kariyon::Environment.platform
       when 'FreeBSD'
