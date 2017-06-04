@@ -1,4 +1,5 @@
 require 'kariyon/environment'
+require 'kariyon/deployer'
 require 'fileutils'
 
 module Kariyon
@@ -14,11 +15,18 @@ module Kariyon
     end
 
     def self.create
+      raise 'MINCをアンインストールしてください。' if minc?
       puts "link #{src} -> #{dest}"
       File.symlink(src, dest)
     end
 
     private
+    def self.minc?
+      return Kariyon::Deployer.minc?(
+        File.join(Kariyon::Deployer.destdir, Kariyon::Environment.name)
+      )
+    end
+
     def self.src
       return File.join(ROOT_DIR, 'bin/kariyon.rb')
     end
@@ -26,9 +34,9 @@ module Kariyon
     def self.dest
       case Kariyon::Environment.platform
       when 'FreeBSD', 'Darwin'
-        return File.join(self.destdir, '900.kariyon')
+        return File.join(self.destdir, "900.kariyon-#{Kariyon::Environment.name}")
       when 'Debian'
-        return File.join(self.destdir, 'kariyon')
+        return File.join(self.destdir, "kariyon-#{Kariyon::Environment.name.gsub('.', '-')}")
       end
     end
 
