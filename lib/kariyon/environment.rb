@@ -8,5 +8,9 @@ module Kariyon
       return 'Debian' if File.executable?('/usr/bin/apt-get')
       return `uname`.chomp
     end
+
+    def self.cron?
+      return ENV.member?('CRON') && (ENV['CRON'] != '')
+    end
   end
 end
