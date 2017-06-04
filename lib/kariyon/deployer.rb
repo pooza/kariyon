@@ -3,8 +3,8 @@ require 'fileutils'
 
 module Kariyon
   class Deployer
-    def self.clear
-      Dir.glob(File.join(destdir, '/*')) do |f|
+    def self.clean
+      Dir.glob(File.join(destroot, '/*')) do |f|
         next unless kariyon?(f)
         puts "delete #{f}"
         FileUtils.rm_rf(f)
@@ -12,24 +12,35 @@ module Kariyon
     end
 
     def self.create
-      dir = File.join(destdir, Kariyon::Environment.name)
-      raise 'MINCをアンインストールしてください。' if minc?(dir)
-      puts "create #{dir}"
-      Dir.mkdir(dir, 0755)
-      FileUtils.touch(File.join(dir, '.kariyon'))
+      raise 'MINCをアンインストールしてください。' if minc?(dest)
+      puts "create #{dest}"
+      Dir.mkdir(dest, 0755)
+      FileUtils.touch(File.join(dest, '.kariyon'))
+      update
+    end
+
+    def self.update
     end
 
     def self.minc? (f)
       return File.symlink?(f) && File.exist?(File.join(f, 'webapp/lib/MincSite.class.php'))
     end
 
-    def self.destdir
-      return '/usr/local/www/apache24/data'
-    end
-
-    private
     def self.kariyon? (f)
       return File.directory?(f) && File.exist?(File.join(f, '.kariyon'))
+    end
+
+    def self.destroot
+      case Kariyon::Environment.platform
+      when 'FreeBSD'
+        return '/usr/local/www/apache24/data'
+      else
+        raise "#{Kariyon::Environment.platform}は未対応です。"
+      end
+    end
+
+    def self.dest
+      return File.join(destroot, Kariyon::Environment.name)
     end
   end
 end
