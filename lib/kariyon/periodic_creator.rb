@@ -4,7 +4,7 @@ require 'fileutils'
 module Kariyon
   class PeriodicCreator
     def self.clear
-      Dir.glob(File.join(dest, '/*')) do |f|
+      Dir.glob(File.join(destdir, '/*')) do |f|
         next unless File.symlink?(f)
         if File.readlink(f).match(ROOT_DIR)
           puts "delete #{f}"
@@ -14,6 +14,7 @@ module Kariyon
     end
 
     def self.create
+      puts "link #{src} -> #{dest}"
       File.symlink(src, dest)
     end
 
@@ -23,7 +24,7 @@ module Kariyon
     end
 
     def self.dest
-      case Ginseng::Environment.platform.name
+      case Kariyon::Environment.platform
       when 'FreeBSD', 'Darwin'
         return File.join(self.destdir, '900.kariyon')
       when 'Debian'
@@ -32,7 +33,7 @@ module Kariyon
     end
 
     def self.destdir
-      case Ginseng::Environment.platform.name
+      case Kariyon::Environment.platform
       when 'FreeBSD', 'Darwin'
         return '/usr/local/etc/periodic/frequently'
       when 'Debian'

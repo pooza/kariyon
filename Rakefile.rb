@@ -8,6 +8,11 @@ task :install => [
   'periodic:init',
 ]
 
+desc 'アンインストール'
+task :uninstall => [
+  'periodic:clean',
+]
+
 namespace :periodic do
   desc 'periodicを初期化'
   task :init => [:clean, :create]
