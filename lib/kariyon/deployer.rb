@@ -7,7 +7,7 @@ require 'etc'
 module Kariyon
   class Deployer
     def self.clean
-      Dir.glob(File.join(destroot, '/*')) do |f|
+      Dir.glob(File.join(destroot, '*')) do |f|
         next unless kariyon?(f)
         puts "delete #{f}"
         FileUtils.rm_rf(f)
@@ -18,7 +18,6 @@ module Kariyon
       raise 'MINCをアンインストールしてください。' if minc?(dest)
       puts "create #{dest}"
       Dir.mkdir(dest, 0755)
-      FileUtils.touch(File.join(dest, '.kariyon'))
       update
     end
 
@@ -34,11 +33,11 @@ module Kariyon
     end
 
     def self.minc? (f)
-      return File.symlink?(f) && File.exist?(File.join(f, 'webapp/lib/MincSite.class.php'))
+      return File.exist?(File.join(f, 'webapp/lib/MincSite.class.php'))
     end
 
     def self.kariyon? (f)
-      return File.directory?(f) && File.exist?(File.join(f, '.kariyon'))
+      return File.exist?(File.join(f, 'bin/kariyon.rb'))
     end
 
     private
