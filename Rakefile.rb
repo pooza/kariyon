@@ -44,4 +44,9 @@ namespace :htdocs do
   task :create do
     Kariyon::Deployer.create
   end
+
+  desc 'htdocsのリンクを更新'
+  task :update do
+    Kariyon::Deployer.update
+  end
 end

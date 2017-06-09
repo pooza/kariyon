@@ -7,31 +7,51 @@ require 'etc'
 module Kariyon
   class Deployer
     def self.clean
+      begin
+        raise 'MINCをアンインストールしてください。' if minc?
+      rescue => e
+        puts "#{e.class}: #{e.message}"
+        exit 1
+      end
+
       Dir.glob(File.join(destroot, '*')) do |f|
-        next unless kariyon?(f)
-        if File.readlink(File.join(f, 'www')).match(ROOT_DIR)
-          puts "delete #{f}"
-          FileUtils.rm_rf(f)
+        begin
+          if kariyon?(f) && File.readlink(File.join(f, 'www')).match(ROOT_DIR)
+            puts "delete #{f}"
+            FileUtils.rm_rf(f)
+          end
+        rescue => e
+          puts "#{e.class}: #{e.message}"
         end
       end
     end
 
     def self.create
-      raise 'MINCをアンインストールしてください。' if minc?
-      puts "create #{dest}"
-      Dir.mkdir(dest, 0755)
-      FileUtils.touch(File.join(dest, '.kariyon'))
-      update
+      begin
+        raise 'MINCをアンインストールしてください。' if minc?
+        puts "create #{dest}"
+        Dir.mkdir(dest, 0755)
+        FileUtils.touch(File.join(dest, '.kariyon'))
+        update
+      rescue => e
+        puts "#{e.class}: #{e.message}"
+        exit 1
+      end
     end
 
     def self.update
-      link = File.join(dest, 'www')
-      if File.exist?(link)
-        puts "delete #{link}" unless Kariyon::Environment.cron?
-        File.unlink(link)
+      begin
+        link = File.join(dest, 'www')
+        if File.exist?(link)
+          puts "delete #{link}" unless Kariyon::Environment.cron?
+          File.unlink(link)
+        end
+        puts "link #{current_doc} -> #{link}" unless Kariyon::Environment.cron?
+        File.symlink(current_doc, link)
+      rescue => e
+        puts "#{e.class}: #{e.message}"
+        exit 1
       end
-      puts "link #{current_doc} -> #{link}" unless Kariyon::Environment.cron?
-      File.symlink(current_doc, link)
     end
 
     def self.minc? (f = nil)
@@ -59,14 +79,6 @@ module Kariyon
     end
 
     def self.current_doc
-      if Dir.glob(File.join(ROOT_DIR, 'htdocs/*')).empty?
-        path = File.join(ROOT_DIR, 'htdocs', Time.now.strftime('%FT%H:%M'))
-        puts "create #{path}"
-        Dir.mkdir(path)
-        File.chown(uid, gid, path)
-        return path
-      end
-
       current = nil
       errors = []
       Dir.glob(File.join(ROOT_DIR, 'htdocs/*')).sort.each do |f|
@@ -82,11 +94,24 @@ module Kariyon
           current = time
         end
       end
-      send_errors(errors) unless errors.empty?
-      return File.join(ROOT_DIR, 'htdocs', current.strftime('%FT%H:%M'))
+      alert(errors) unless errors.empty?
+
+      if current.nil?
+        path = doc_path(Time.now)
+        puts "create #{path}"
+        Dir.mkdir(path)
+        File.chown(uid, gid, path)
+        return path
+      else
+        return doc_path(current)
+      end
     end
 
-    def self.send_errors (errors)
+    def self.doc_path (time)
+      return File.join(ROOT_DIR, 'htdocs', time.strftime('%FT%H:%M'))
+    end
+
+    def self.alert (errors)
       mail = Kariyon::MailDeliverer.new
       mail.subject = 'kariyon日付設定エラー'
       mail.priority = 2
