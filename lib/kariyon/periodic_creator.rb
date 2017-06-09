@@ -5,7 +5,7 @@ require 'fileutils'
 module Kariyon
   class PeriodicCreator
     def self.clean
-      Dir.glob(File.join(destroot, '/*')) do |f|
+      Dir.glob(File.join(destroot, '*')) do |f|
         next unless File.symlink?(f)
         if File.readlink(f).match(ROOT_DIR)
           puts "delete #{f}"
@@ -15,7 +15,7 @@ module Kariyon
     end
 
     def self.create
-      raise 'MINCをアンインストールしてください。' if minc?(dest)
+      raise 'MINCをアンインストールしてください。' if minc?
       puts "link #{src} -> #{dest}"
       File.symlink(src, dest)
     end
