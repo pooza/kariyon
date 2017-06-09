@@ -67,7 +67,7 @@ module Kariyon
 
       current = nil
       errors = []
-      Dir.glob(File.join(ROOT_DIR, 'htdocs/*')).each do |f|
+      Dir.glob(File.join(ROOT_DIR, 'htdocs/*')).sort.each do |f|
         next unless File.directory?(f)
         begin
           time = Time.parse(File.basename(f))
