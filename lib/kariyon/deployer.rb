@@ -9,13 +9,15 @@ module Kariyon
     def self.clean
       Dir.glob(File.join(destroot, '*')) do |f|
         next unless kariyon?(f)
-        puts "delete #{f}"
-        FileUtils.rm_rf(f)
+        if File.readlink(File.join(f, 'www')).match(ROOT_DIR)
+          puts "delete #{f}"
+          FileUtils.rm_rf(f)
+        end
       end
     end
 
     def self.create
-      raise 'MINCをアンインストールしてください。' if minc?(dest)
+      raise 'MINCをアンインストールしてください。' if minc?
       puts "create #{dest}"
       Dir.mkdir(dest, 0755)
       FileUtils.touch(File.join(dest, '.kariyon'))
@@ -32,11 +34,13 @@ module Kariyon
       File.symlink(current_doc, link)
     end
 
-    def self.minc? (f)
+    def self.minc? (f = nil)
+      f ||= dest
       return File.exist?(File.join(f, 'webapp/lib/MincSite.class.php'))
     end
 
-    def self.kariyon? (f)
+    def self.kariyon? (f = nil)
+      f ||= dest
       return File.exist?(File.join(f, '.kariyon'))
     end
 
@@ -55,9 +59,8 @@ module Kariyon
     end
 
     def self.current_doc
-      format = '%FT%H:%M'
       if Dir.glob(File.join(ROOT_DIR, 'htdocs/*')).empty?
-        path = File.join(ROOT_DIR, 'htdocs', Time.now.strftime(format))
+        path = File.join(ROOT_DIR, 'htdocs', Time.now.strftime('%FT%H:%M'))
         puts "create #{path}"
         Dir.mkdir(path)
         File.chown(uid, gid, path)
@@ -71,6 +74,7 @@ module Kariyon
         begin
           time = Time.parse(File.basename(f))
         rescue ArgumentError
+          puts "invalid folder name: #{File.basename(f)}"
           errors.push("フォルダ名 '#{File.basename(f)}' が正しくありません。")
           next
         end
@@ -79,7 +83,7 @@ module Kariyon
         end
       end
       send_errors(errors) unless errors.empty?
-      return File.join(ROOT_DIR, 'htdocs', current.strftime(format))
+      return File.join(ROOT_DIR, 'htdocs', current.strftime('%FT%H:%M'))
     end
 
     def self.send_errors (errors)
