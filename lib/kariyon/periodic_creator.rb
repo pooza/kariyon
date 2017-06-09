@@ -15,10 +15,7 @@ module Kariyon
     end
 
     def self.create
-      if minc?
-        raise 'MINCをアンインストールしてください。'
-        exit 1
-      end
+      raise 'MINCをアンインストールしてください。' if minc?(dest)
       puts "link #{src} -> #{dest}"
       File.symlink(src, dest)
     end

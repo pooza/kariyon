@@ -46,8 +46,7 @@ module Kariyon
       when 'FreeBSD'
         return '/usr/local/www/apache24/data'
       else
-        puts "#{Kariyon::Environment.platform}は未対応です。"
-        exit 1
+        raise "#{Kariyon::Environment.platform}は未対応です。"
       end
     end
 
