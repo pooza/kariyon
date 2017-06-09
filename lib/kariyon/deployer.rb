@@ -18,6 +18,7 @@ module Kariyon
       raise 'MINCをアンインストールしてください。' if minc?(dest)
       puts "create #{dest}"
       Dir.mkdir(dest, 0755)
+      FileUtils.touch(File.join(dest, '.kariyon'))
       update
     end
 
@@ -29,7 +30,6 @@ module Kariyon
       end
       puts "link #{current_doc} -> #{link}" unless Kariyon::Environment.cron?
       File.symlink(current_doc, link)
-      File.lchown(uid, gid, link)
     end
 
     def self.minc? (f)
@@ -37,7 +37,7 @@ module Kariyon
     end
 
     def self.kariyon? (f)
-      return File.exist?(File.join(f, 'bin/kariyon.rb'))
+      return File.exist?(File.join(f, '.kariyon'))
     end
 
     private
