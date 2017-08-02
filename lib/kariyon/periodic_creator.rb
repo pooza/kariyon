@@ -25,14 +25,12 @@ module Kariyon
     end
 
     def self.create
-      begin
-        raise 'MINCをアンインストールしてください。' if Kariyon::Deployer.minc?
-        puts "link #{src} -> #{dest}"
-        File.symlink(src, dest)
-      rescue => e
-        puts "#{e.class}: #{e.message}"
-        exit 1
-      end
+      raise 'MINCをアンインストールしてください。' if Kariyon::Deployer.minc?
+      puts "link #{src} -> #{dest}"
+      File.symlink(src, dest)
+    rescue => e
+      puts "#{e.class}: #{e.message}"
+      exit 1
     end
 
     private

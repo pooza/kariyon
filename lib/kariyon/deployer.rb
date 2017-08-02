@@ -27,31 +27,27 @@ module Kariyon
     end
 
     def self.create
-      begin
-        raise 'MINCをアンインストールしてください。' if minc?
-        puts "create #{dest}"
-        Dir.mkdir(dest, 0755)
-        FileUtils.touch(File.join(dest, '.kariyon'))
-        update
-      rescue => e
-        puts "#{e.class}: #{e.message}"
-        exit 1
-      end
+      raise 'MINCをアンインストールしてください。' if minc?
+      puts "create #{dest}"
+      Dir.mkdir(dest, 0755)
+      FileUtils.touch(File.join(dest, '.kariyon'))
+      update
+    rescue => e
+      puts "#{e.class}: #{e.message}"
+      exit 1
     end
 
     def self.update
-      begin
-        link = File.join(dest, 'www')
-        if File.exist?(link)
-          puts "delete #{link}" unless Kariyon::Environment.cron?
-          File.unlink(link)
-        end
-        puts "link #{current_doc} -> #{link}" unless Kariyon::Environment.cron?
-        File.symlink(current_doc, link)
-      rescue => e
-        puts "#{e.class}: #{e.message}"
-        exit 1
+      link = File.join(dest, 'www')
+      if File.exist?(link)
+        puts "delete #{link}" unless Kariyon::Environment.cron?
+        File.unlink(link)
       end
+      puts "link #{current_doc} -> #{link}" unless Kariyon::Environment.cron?
+      File.symlink(current_doc, link)
+    rescue => e
+      puts "#{e.class}: #{e.message}"
+      exit 1
     end
 
     def self.minc? (f = nil)
