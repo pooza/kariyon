@@ -6,8 +6,8 @@ module Kariyon
     def initialize
       @mail = Mail.new(charset: 'UTF-8')
       @mail['X-Mailer'] = self.class.name
-      @mail.from = "root@#{Kariyon::Environment.name}"
-      @mail.to = "admin@#{Kariyon::Environment.name}"
+      @mail.from = "root@#{Environment.name}"
+      @mail.to = "admin@#{Environment.name}"
       @mail.delivery_method(:sendmail)
     end
 
@@ -16,7 +16,7 @@ module Kariyon
     end
 
     def subject= (value)
-      @mail.subject = "#{Kariyon::Environment.name} #{value}"
+      @mail.subject = "#{Environment.name} #{value}"
     end
 
     def to

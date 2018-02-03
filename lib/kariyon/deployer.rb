@@ -40,10 +40,10 @@ module Kariyon
     def self.update
       link = File.join(dest, 'www')
       if File.exist?(link)
-        puts "delete #{link}" unless Kariyon::Environment.cron?
+        puts "delete #{link}" unless Environment.cron?
         File.unlink(link)
       end
-      puts "link #{current_doc} -> #{link}" unless Kariyon::Environment.cron?
+      puts "link #{current_doc} -> #{link}" unless Environment.cron?
       File.symlink(current_doc, link)
     rescue => e
       puts "#{e.class}: #{e.message}"
@@ -62,16 +62,16 @@ module Kariyon
 
     private
     def self.destroot
-      case Kariyon::Environment.platform
+      case Environment.platform
       when 'FreeBSD'
         return '/usr/local/www/apache24/data'
       else
-        raise "#{Kariyon::Environment.platform}は未対応です。"
+        raise "#{Environment.platform}は未対応です。"
       end
     end
 
     def self.dest
-      return File.join(destroot, Kariyon::Environment.name)
+      return File.join(destroot, Environment.name)
     end
 
     def self.current_doc
@@ -108,7 +108,7 @@ module Kariyon
     end
 
     def self.alert (errors)
-      mail = Kariyon::MailDeliverer.new
+      mail = MailDeliverer.new
       mail.subject = 'kariyon日付設定エラー'
       mail.priority = 2
       mail.body = errors.join("\n")
