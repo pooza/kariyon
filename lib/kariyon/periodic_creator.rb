@@ -33,7 +33,6 @@ module Kariyon
       exit 1
     end
 
-    private
     def self.src
       return File.join(ROOT_DIR, 'bin/kariyon.rb')
     end
@@ -43,7 +42,7 @@ module Kariyon
       when 'FreeBSD', 'Darwin'
         return File.join(destroot, "900.kariyon-#{Environment.name}")
       when 'Debian'
-        return File.join(destroot, "kariyon-#{Environment.name.gsub('.', '-')}")
+        return File.join(destroot, "kariyon-#{Environment.name.tr('.', '-')}")
       end
     end
 

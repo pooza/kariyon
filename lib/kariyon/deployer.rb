@@ -1,5 +1,5 @@
 require 'kariyon/environment'
-require 'kariyon/mail_deliverer'
+require 'kariyon/slack'
 require 'fileutils'
 require 'time'
 require 'etc'
@@ -29,7 +29,7 @@ module Kariyon
     def self.create
       raise 'MINCをアンインストールしてください。' if minc?
       puts "create #{dest}"
-      Dir.mkdir(dest, 0755)
+      Dir.mkdir(dest, 0o755)
       FileUtils.touch(File.join(dest, '.kariyon'))
       update
     rescue => e
@@ -50,17 +50,16 @@ module Kariyon
       exit 1
     end
 
-    def self.minc? (f = nil)
-      f ||= dest
-      return File.exist?(File.join(f, 'webapp/lib/MincSite.class.php'))
+    def self.minc?(path = nil)
+      path ||= dest
+      return File.exist?(File.join(path, 'webapp/lib/MincSite.class.php'))
     end
 
-    def self.kariyon? (f = nil)
-      f ||= dest
-      return File.exist?(File.join(f, '.kariyon'))
+    def self.kariyon?(path = nil)
+      path ||= dest
+      return File.exist?(File.join(path, '.kariyon'))
     end
 
-    private
     def self.destroot
       case Environment.platform
       when 'FreeBSD'
@@ -76,38 +75,30 @@ module Kariyon
 
     def self.current_doc
       current = nil
-      errors = []
       Dir.glob(File.join(ROOT_DIR, 'htdocs/*')).sort.each do |f|
         next unless File.directory?(f)
         begin
           time = Time.parse(File.basename(f))
         rescue ArgumentError
-          puts "invalid folder name: #{File.basename(f)}"
-          errors.push("フォルダ名 '#{File.basename(f)}' が正しくありません。")
+          alert("フォルダ名 '#{File.basename(f)}' が正しくありません。")
           next
         end
-        if current.nil? || ((current < time) && (time <= Time.now))
-          current = time
-        end
+        current = time if current.nil? || ((current < time) && (time <= Time.now))
       end
-      alert(errors) unless errors.empty?
+      return doc_path(current) if current
 
-      if current.nil?
-        path = doc_path(Time.now)
-        puts "create #{path}"
-        Dir.mkdir(path)
-        File.chown(uid, gid, path)
-        return path
-      else
-        return doc_path(current)
-      end
+      path = doc_path(Time.now)
+      puts "create #{path}"
+      Dir.mkdir(path)
+      File.chown(uid, gid, path)
+      return path
     end
 
-    def self.doc_path (time)
+    def self.doc_path(time)
       return File.join(ROOT_DIR, 'htdocs', time.strftime('%FT%H:%M'))
     end
 
-    def self.alert (errors)
+    def self.alert(errors)
       mail = MailDeliverer.new
       mail.subject = 'kariyon日付設定エラー'
       mail.priority = 2

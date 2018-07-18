@@ -1,4 +1,4 @@
-ROOT_DIR = File.expand_path('..', __FILE__)
+ROOT_DIR = File.expand_path(__dir__)
 $LOAD_PATH.push(File.join(ROOT_DIR, 'lib'))
 
 ENV['BUNDLE_GEMFILE'] ||= File.join(ROOT_DIR, 'Gemfile')
@@ -7,19 +7,19 @@ require 'kariyon/periodic_creator'
 require 'kariyon/deployer'
 
 desc 'インストール'
-task :install => [
+task install: [
   'periodic:init',
   'htdocs:init',
 ]
 
 desc 'アンインストール'
-task :uninstall => [
+task uninstall: [
   'periodic:clean',
   'htdocs:clean',
 ]
 
 namespace :periodic do
-  task :init => [:clean, :create]
+  task init: [:clean, :create]
 
   desc 'periodicをクリア'
   task :clean do
@@ -33,7 +33,7 @@ namespace :periodic do
 end
 
 namespace :htdocs do
-  task :init => [:clean, :create]
+  task init: [:clean, :create]
 
   desc 'htdocsをクリア'
   task :clean do
