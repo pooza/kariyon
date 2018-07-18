@@ -1,5 +1,6 @@
 require 'kariyon/environment'
 require 'kariyon/slack'
+require 'kariyon/logger'
 require 'fileutils'
 require 'time'
 require 'etc'
@@ -10,43 +11,56 @@ module Kariyon
       begin
         raise 'MINCをアンインストールしてください。' if minc?
       rescue => e
-        puts "#{e.class}: #{e.message}"
+        message = {message: "#{e.class}: #{e.message}"}
+        Slack.broadcast(message)
+        Logger.new.error(message)
         exit 1
       end
 
       Dir.glob(File.join(destroot, '*')) do |f|
         begin
           if kariyon?(f) && File.readlink(File.join(f, 'www')).match(ROOT_DIR)
-            puts "delete #{f}"
+            message = {message: "削除 #{f}"}
+            Slack.broadcast(message)
+            Logger.new.info(message)
             FileUtils.rm_rf(f)
           end
         rescue => e
-          puts "#{e.class}: #{e.message}"
+          message = {message: "#{e.class}: #{e.message}"}
+          Slack.broadcast(message)
+          Logger.new.error(message)
         end
       end
     end
 
     def self.create
       raise 'MINCをアンインストールしてください。' if minc?
-      puts "create #{dest}"
-      Dir.mkdir(dest, 0o755)
+      Dir.mkdir(dest, 0o775)
       FileUtils.touch(File.join(dest, '.kariyon'))
       update
+      message = {message: "作成 #{dest}"}
+      Slack.broadcast(message)
+      Logger.new.info(message)
     rescue => e
-      puts "#{e.class}: #{e.message}"
+      message = {message: "#{e.class}: #{e.message}"}
+      Slack.broadcast(message)
+      Logger.new.error(message)
       exit 1
     end
 
     def self.update
       link = File.join(dest, 'www')
-      if File.exist?(link)
-        puts "delete #{link}" unless Environment.cron?
-        File.unlink(link)
-      end
-      puts "link #{current_doc} -> #{link}" unless Environment.cron?
-      File.symlink(current_doc, link)
+      root = read_root_path
+      return if File.exist?(link) && (File.readlink(link) == root)
+      File.unlink(link) if File.exist?(link)
+      File.symlink(root, link)
+      message = {message: "リンク #{root} -> #{link}"}
+      Slack.broadcast(message)
+      Logger.new.info(message)
     rescue => e
-      puts "#{e.class}: #{e.message}"
+      message = {message: "#{e.class}: #{e.message}"}
+      Slack.broadcast(message)
+      Logger.new.error(message)
       exit 1
     end
 
@@ -73,37 +87,30 @@ module Kariyon
       return File.join(destroot, Environment.name)
     end
 
-    def self.current_doc
+    def self.read_root_path
       current = nil
       Dir.glob(File.join(ROOT_DIR, 'htdocs/*')).sort.each do |f|
         next unless File.directory?(f)
         begin
           time = Time.parse(File.basename(f))
         rescue ArgumentError
-          alert("フォルダ名 '#{File.basename(f)}' が正しくありません。")
+          message = {message: "フォルダ名不正 '#{File.basename(f)}'"}
+          Slack.broadcast(message)
+          Logger.new.error(message)
           next
         end
         current = time if current.nil? || ((current < time) && (time <= Time.now))
       end
-      return doc_path(current) if current
+      return create_path(current) if current
 
-      path = doc_path(Time.now)
-      puts "create #{path}"
+      path = create_path(Time.now)
       Dir.mkdir(path)
       File.chown(uid, gid, path)
       return path
     end
 
-    def self.doc_path(time)
+    def self.create_path(time)
       return File.join(ROOT_DIR, 'htdocs', time.strftime('%FT%H:%M'))
-    end
-
-    def self.alert(errors)
-      mail = MailDeliverer.new
-      mail.subject = 'kariyon日付設定エラー'
-      mail.priority = 2
-      mail.body = errors.join("\n")
-      mail.deliver!
     end
 
     def self.uid
