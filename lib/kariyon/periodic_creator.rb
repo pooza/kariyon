@@ -1,6 +1,6 @@
 require 'kariyon/environment'
 require 'kariyon/deployer'
-require 'kariyon/logger'
+require 'kariyon/alerter'
 require 'fileutils'
 
 module Kariyon
@@ -9,28 +9,28 @@ module Kariyon
       begin
         raise 'MINCをアンインストールしてください。' if Deployer.minc?
       rescue => e
-        Logger.new.error({message: "#{e.class}: #{e.message}"})
+        Alerter.alert({error: "#{e.class}: #{e.message}"})
         exit 1
       end
 
       Dir.glob(File.join(destroot, '*')) do |f|
         begin
           if File.symlink?(f) && File.readlink(f).match(ROOT_DIR)
-            Logger.new.info({message: "削除 #{f}"})
             File.unlink(f)
+            Alerter.log({message: "削除 #{f}"})
           end
         rescue => e
-          Logger.new.error({message: "#{e.class}: #{e.message}"})
+          Alerter.alert({error: "#{e.class}: #{e.message}"})
         end
       end
     end
 
     def self.create
       raise 'MINCをアンインストールしてください。' if Deployer.minc?
-      Logger.new.info({message: "リンク #{src} -> #{dest}"})
       File.symlink(src, dest)
+      Alerter.log({message: "リンク #{src} -> #{dest}"})
     rescue => e
-      Logger.new.error({message: "#{e.class}: #{e.message}"})
+      Alerter.alert({error: "#{e.class}: #{e.message}"})
       exit 1
     end
 

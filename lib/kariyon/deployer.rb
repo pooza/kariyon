@@ -1,6 +1,5 @@
 require 'kariyon/environment'
-require 'kariyon/slack'
-require 'kariyon/logger'
+require 'kariyon/alerter'
 require 'fileutils'
 require 'time'
 require 'etc'
@@ -11,24 +10,18 @@ module Kariyon
       begin
         raise 'MINCをアンインストールしてください。' if minc?
       rescue => e
-        message = {message: "#{e.class}: #{e.message}"}
-        Slack.broadcast(message)
-        Logger.new.error(message)
+        Alerter.alert({error: "#{e.class}: #{e.message}"})
         exit 1
       end
 
       Dir.glob(File.join(destroot, '*')) do |f|
         begin
           if kariyon?(f) && File.readlink(File.join(f, 'www')).match(ROOT_DIR)
-            message = {message: "削除 #{f}"}
-            Slack.broadcast(message)
-            Logger.new.info(message)
             FileUtils.rm_rf(f)
+            Alerter.log({message: "削除 #{f}"})
           end
         rescue => e
-          message = {message: "#{e.class}: #{e.message}"}
-          Slack.broadcast(message)
-          Logger.new.error(message)
+          Alerter.alert({error: "#{e.class}: #{e.message}"})
         end
       end
     end
@@ -38,13 +31,9 @@ module Kariyon
       Dir.mkdir(dest, 0o775)
       FileUtils.touch(File.join(dest, '.kariyon'))
       update
-      message = {message: "作成 #{dest}"}
-      Slack.broadcast(message)
-      Logger.new.info(message)
+      Alerter.log({message: "作成 #{dest}"})
     rescue => e
-      message = {message: "#{e.class}: #{e.message}"}
-      Slack.broadcast(message)
-      Logger.new.error(message)
+      Alerter.alert({error: "#{e.class}: #{e.message}"})
       exit 1
     end
 
@@ -54,13 +43,9 @@ module Kariyon
       return if File.exist?(link) && (File.readlink(link) == root)
       File.unlink(link) if File.exist?(link)
       File.symlink(root, link)
-      message = {message: "リンク #{root} -> #{link}"}
-      Slack.broadcast(message)
-      Logger.new.info(message)
+      Alerter.alert({message: "リンク #{root} -> #{link}"})
     rescue => e
-      message = {message: "#{e.class}: #{e.message}"}
-      Slack.broadcast(message)
-      Logger.new.error(message)
+      Alerter.alert({error: "#{e.class}: #{e.message}"})
       exit 1
     end
 
@@ -94,9 +79,7 @@ module Kariyon
         begin
           time = Time.parse(File.basename(f))
         rescue ArgumentError
-          message = {message: "フォルダ名不正 '#{File.basename(f)}'"}
-          Slack.broadcast(message)
-          Logger.new.error(message)
+          Alerter.alert({message: "フォルダ名不正 '#{File.basename(f)}'"})
           next
         end
         current = time if current.nil? || ((current < time) && (time <= Time.now))
