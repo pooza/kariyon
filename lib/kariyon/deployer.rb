@@ -7,13 +7,7 @@ require 'etc'
 module Kariyon
   class Deployer
     def self.clean
-      begin
-        raise 'MINCをアンインストールしてください。' if minc?
-      rescue => e
-        Alerter.alert({error: "#{e.class}: #{e.message}"})
-        exit 1
-      end
-
+      raise 'MINCをアンインストールしてください。' if minc?
       Dir.glob(File.join(destroot, '*')) do |f|
         begin
           if kariyon?(f) && File.readlink(File.join(f, 'www')).match(ROOT_DIR)
@@ -24,6 +18,9 @@ module Kariyon
           Alerter.alert({error: "#{e.class}: #{e.message}"})
         end
       end
+    rescue => e
+      Alerter.alert({error: "#{e.class}: #{e.message}"})
+      exit 1
     end
 
     def self.create
@@ -50,6 +47,16 @@ module Kariyon
     end
 
     def self.minc?(path = nil)
+      path ||= dest
+      return minc3?(path) || minc2?(path)
+    end
+
+    def self.minc3?(path = nil)
+      path ||= dest
+      return File.exist?(File.join(path, 'webapp/lib/Minc3/Site.class.php'))
+    end
+
+    def self.minc2?(path = nil)
       path ||= dest
       return File.exist?(File.join(path, 'webapp/lib/MincSite.class.php'))
     end
