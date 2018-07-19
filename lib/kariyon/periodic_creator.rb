@@ -6,13 +6,7 @@ require 'fileutils'
 module Kariyon
   class PeriodicCreator
     def self.clean
-      begin
-        raise 'MINCをアンインストールしてください。' if Deployer.minc?
-      rescue => e
-        Alerter.alert({error: "#{e.class}: #{e.message}"})
-        exit 1
-      end
-
+      raise 'MINCをアンインストールしてください。' if Deployer.minc?
       Dir.glob(File.join(destroot, '*')) do |f|
         begin
           if File.symlink?(f) && File.readlink(f).match(ROOT_DIR)
@@ -23,6 +17,9 @@ module Kariyon
           Alerter.alert({error: "#{e.class}: #{e.message}"})
         end
       end
+    rescue => e
+      Alerter.alert({error: "#{e.class}: #{e.message}"})
+      exit 1
     end
 
     def self.create
