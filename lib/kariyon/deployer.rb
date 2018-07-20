@@ -1,65 +1,91 @@
 require 'kariyon/environment'
-require 'kariyon/alerter'
+require 'kariyon/message'
+require 'kariyon/logger'
+require 'kariyon/slack'
+require 'singleton'
 require 'fileutils'
 require 'time'
 require 'etc'
 
 module Kariyon
   class Deployer
-    def self.clean
-      begin
-        raise 'MINCをアンインストールしてください。' if minc?
-      rescue => e
-        Alerter.alert({error: "#{e.class}: #{e.message}"})
-        exit 1
-      end
+    include Singleton
 
-      Dir.glob(File.join(destroot, '*')) do |f|
+    def initialize
+      @logger = Logger.new
+    end
+
+    def clean
+      raise 'MINCをアンインストールしてください。' if minc?
+      Dir.glob(File.join(dest_root, '*')) do |f|
         begin
           if kariyon?(f) && File.readlink(File.join(f, 'www')).match(ROOT_DIR)
             FileUtils.rm_rf(f)
-            Alerter.log({message: "削除 #{f}"})
+            @logger.info(Message.new({action: 'delete', file: f}))
           end
         rescue => e
-          Alerter.alert({error: "#{e.class}: #{e.message}"})
+          message = Message.new(e)
+          Slack.broadcast(message)
+          @logger.error(message)
         end
       end
+    rescue => e
+      message = Message.new(e)
+      Slack.broadcast(message)
+      @logger.error(message)
+      exit 1
     end
 
-    def self.create
+    def create
       raise 'MINCをアンインストールしてください。' if minc?
       Dir.mkdir(dest, 0o775)
       FileUtils.touch(File.join(dest, '.kariyon'))
+      @logger.info(Message.new({action: 'create', file: dest}))
       update
-      Alerter.log({message: "作成 #{dest}"})
     rescue => e
-      Alerter.alert({error: "#{e.class}: #{e.message}"})
+      message = Message.new(e)
+      Slack.broadcast(message)
+      @logger.error(message)
       exit 1
     end
 
-    def self.update
-      link = File.join(dest, 'www')
-      root = read_root_path
-      return if File.exist?(link) && (File.readlink(link) == root)
-      File.unlink(link) if File.exist?(link)
-      File.symlink(root, link)
-      Alerter.alert({message: "リンク #{root} -> #{link}"})
+    def update
+      return if File.exist?(root_alias) && (File.readlink(root_alias) == real_root)
+      File.unlink(root_alias) if File.exist?(root_alias)
+      File.symlink(real_root, root_alias)
+      message = Message.new({action: 'link', source: real_root, dest: root_alias})
+      Slack.broadcast(message)
+      @logger.info(message)
     rescue => e
-      Alerter.alert({error: "#{e.class}: #{e.message}"})
+      message = Message.new(e)
+      Slack.broadcast(message)
+      @logger.error(message)
       exit 1
     end
 
-    def self.minc?(path = nil)
+    def minc?(path = nil)
       path ||= dest
-      return File.exist?(File.join(path, 'webapp/lib/MincSite.class.php'))
+      return minc3?(path) || minc2?(path)
     end
 
-    def self.kariyon?(path = nil)
+    def kariyon?(path = nil)
       path ||= dest
       return File.exist?(File.join(path, '.kariyon'))
     end
 
-    def self.destroot
+    private
+
+    def minc3?(path = nil)
+      path ||= dest
+      return File.exist?(File.join(path, 'webapp/lib/Minc3/Site.class.php'))
+    end
+
+    def minc2?(path = nil)
+      path ||= dest
+      return File.exist?(File.join(path, 'webapp/lib/MincSite.class.php'))
+    end
+
+    def dest_root
       case Environment.platform
       when 'FreeBSD'
         return '/usr/local/www/apache24/data'
@@ -68,39 +94,49 @@ module Kariyon
       end
     end
 
-    def self.dest
-      return File.join(destroot, Environment.name)
+    def dest
+      return File.join(dest_root, Environment.name)
     end
 
-    def self.read_root_path
-      current = nil
+    def root_alias
+      return File.join(dest, 'www')
+    end
+
+    def real_root
+      unless @real_root
+        if recent
+          @real_root = File.join(ROOT_DIR, 'htdocs', recent.strftime('%FT%H:%M'))
+        else
+          @real_root = File.join(ROOT_DIR, 'htdocs', Time.new.strftime('%FT%H:%M'))
+          Dir.mkdir(@real_root)
+          File.chown(uid, gid, @real_root)
+        end
+      end
+      return @real_root
+    end
+
+    def recent
+      return @recent if @recent
       Dir.glob(File.join(ROOT_DIR, 'htdocs/*')).sort.each do |f|
         next unless File.directory?(f)
         begin
           time = Time.parse(File.basename(f))
         rescue ArgumentError
-          Alerter.alert({message: "フォルダ名不正 '#{File.basename(f)}'"})
+          message = Message.new({error: 'invalid folder name', name: File.basename(f)})
+          Slack.broadcast(message)
+          @logger.error(message)
           next
         end
-        current = time if current.nil? || ((current < time) && (time <= Time.now))
+        @recent = time if @recent.nil? || ((@recent < time) && (time <= Time.now))
       end
-      return create_path(current) if current
-
-      path = create_path(Time.now)
-      Dir.mkdir(path)
-      File.chown(uid, gid, path)
-      return path
+      return @recent
     end
 
-    def self.create_path(time)
-      return File.join(ROOT_DIR, 'htdocs', time.strftime('%FT%H:%M'))
-    end
-
-    def self.uid
+    def uid
       return File.stat(ROOT_DIR).uid
     end
 
-    def self.gid
+    def gid
       return File.stat(ROOT_DIR).gid
     end
   end

@@ -10,4 +10,4 @@ ENV['SSL_CERT_FILE'] ||= File.join(ROOT_DIR, 'cert/cacert.pem')
 require 'bundler/setup'
 require 'kariyon/deployer'
 
-Kariyon::Deployer.update
+Kariyon::Deployer.instance.update
