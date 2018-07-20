@@ -5,22 +5,17 @@ module Kariyon
   class Message < Hash
     def initialize(values)
       super
-      values = exception_info(values) if values.is_a?(Exception)
-      values.update({
-        environment: Environment.name,
-        package: {
-          name: Package.name,
-          version: Package.version,
-        },
-      })
-      replace(values)
-    end
-
-    def exception_info(exception)
-      return {
-        class: exception.class,
-        message: exception.message,
-        backtrace: exception.backtrace[0..5],
+      if values.is_a?(Exception)
+        self[:class] = values.class
+        self[:message] = values.message
+        self[:backtrace] = values.backtrace[0..5]
+      else
+        self.update(values)
+      end
+      self[:service] = Environment.name
+      self[:package] = {
+        name: Package.name,
+        version: Package.version,
       }
     end
   end
