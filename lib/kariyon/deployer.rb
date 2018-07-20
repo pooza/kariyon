@@ -21,10 +21,7 @@ module Kariyon
         begin
           if kariyon?(f) && File.readlink(File.join(f, 'www')).match(ROOT_DIR)
             FileUtils.rm_rf(f)
-            @logger.info(Message.new({
-              action: 'delete',
-              file: f,
-            }))
+            @logger.info(Message.new({action: 'delete', file: f}))
           end
         rescue => e
           message = Message.new(e)
@@ -43,10 +40,7 @@ module Kariyon
       raise 'MINCをアンインストールしてください。' if minc?
       Dir.mkdir(dest, 0o775)
       FileUtils.touch(File.join(dest, '.kariyon'))
-      @logger.info(Message.new({
-        action: 'create',
-        file: dest,
-      }))
+      @logger.info(Message.new({action: 'create', file: dest}))
       update
     rescue => e
       message = Message.new(e)
@@ -61,11 +55,7 @@ module Kariyon
       return if File.exist?(link) && (File.readlink(link) == root)
       File.unlink(link) if File.exist?(link)
       File.symlink(root, link)
-      message = Message.new({
-        action: 'link',
-        source: root,
-        dest: link,
-      })
+      message = Message.new({action: 'link', source: root, dest: link})
       Slack.broadcast(message)
       @logger.info(message)
     rescue => e
@@ -117,10 +107,7 @@ module Kariyon
         begin
           time = Time.parse(File.basename(f))
         rescue ArgumentError
-          message = Message.new({
-            error: 'invalid folder name',
-            name: File.basename(f),
-          })
+          message = Message.new({error: 'invalid folder name', name: File.basename(f)})
           Slack.broadcast(message)
           @logger.error(message)
           next

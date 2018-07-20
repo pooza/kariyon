@@ -4,15 +4,16 @@ require 'kariyon/environment'
 module Kariyon
   class Message < Hash
     def initialize(values)
+      super
       values = exception_info(values) if values.is_a?(Exception)
-      super({
+      values.update({
         environment: Environment.name,
         package: {
           name: Package.name,
           version: Package.version,
         },
       })
-      update(values)
+      replace(values)
     end
 
     def exception_info(exception)
