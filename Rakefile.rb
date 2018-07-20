@@ -23,12 +23,12 @@ namespace :periodic do
 
   desc 'periodicをクリア'
   task :clean do
-    Kariyon::PeriodicCreator.clean
+    Kariyon::PeriodicCreator.instance.clean
   end
 
   desc 'periodicにリンクを作成'
   task :create do
-    Kariyon::PeriodicCreator.create
+    Kariyon::PeriodicCreator.instance.create
   end
 end
 
@@ -37,16 +37,16 @@ namespace :htdocs do
 
   desc 'htdocsをクリア'
   task :clean do
-    Kariyon::Deployer.clean
+    Kariyon::Deployer.instance.clean
   end
 
   desc 'htdocsにリンクを作成'
   task :create do
-    Kariyon::Deployer.create
+    Kariyon::Deployer.instance.create
   end
 
   desc 'htdocsのリンクを更新'
   task :update do
-    Kariyon::Deployer.update
+    Kariyon::Deployer.instance.update
   end
 end

@@ -1,41 +1,65 @@
 require 'kariyon/environment'
 require 'kariyon/deployer'
-require 'kariyon/alerter'
+require 'kariyon/message'
+require 'kariyon/logger'
+require 'kariyon/slack'
 require 'fileutils'
+require 'singleton'
 
 module Kariyon
   class PeriodicCreator
-    def self.clean
-      raise 'MINCをアンインストールしてください。' if Deployer.minc?
+    include Singleton
+
+    def initialize
+      @logger = Logger.new
+    end
+
+    def clean
+      raise 'MINCをアンインストールしてください。' if Deployer.instance.minc?
       Dir.glob(File.join(destroot, '*')) do |f|
         begin
           if File.symlink?(f) && File.readlink(f).match(ROOT_DIR)
             File.unlink(f)
-            Alerter.log({message: "削除 #{f}"})
+            @logger.info(Message.new({
+              action: 'delete',
+              file: f,
+            }))
           end
         rescue => e
-          Alerter.alert({error: "#{e.class}: #{e.message}"})
+          message = Message.new(e)
+          Slack.broadcast(message)
+          @logger.error(message)
         end
       end
     rescue => e
-      Alerter.alert({error: "#{e.class}: #{e.message}"})
+      message = Message.new(e)
+      Slack.broadcast(message)
+      @logger.error(message)
       exit 1
     end
 
-    def self.create
-      raise 'MINCをアンインストールしてください。' if Deployer.minc?
+    def create
+      raise 'MINCをアンインストールしてください。' if Deployer.instance.minc?
       File.symlink(src, dest)
-      Alerter.log({message: "リンク #{src} -> #{dest}"})
+      @logger.info(Message.new({
+        action: 'link',
+        source: src,
+        dest: dest,
+      }))
     rescue => e
-      Alerter.alert({error: "#{e.class}: #{e.message}"})
+      message = Message.new(e)
+      Slack.broadcast(message)
+      @logger.error(message)
       exit 1
     end
 
-    def self.src
+    private
+
+    def src
       return File.join(ROOT_DIR, 'bin/kariyon.rb')
     end
 
-    def self.dest
+    def dest
       case Environment.platform
       when 'FreeBSD', 'Darwin'
         return File.join(destroot, "900.kariyon-#{Environment.name}")
@@ -44,7 +68,7 @@ module Kariyon
       end
     end
 
-    def self.destroot
+    def destroot
       case Environment.platform
       when 'FreeBSD', 'Darwin'
         return '/usr/local/etc/periodic/frequently'
