@@ -17,7 +17,7 @@ module Kariyon
 
     def clean
       raise 'MINCをアンインストールしてください。' if minc?
-      Dir.glob(File.join(destroot, '*')) do |f|
+      Dir.glob(File.join(dest_root, '*')) do |f|
         begin
           if kariyon?(f) && File.readlink(File.join(f, 'www')).match(ROOT_DIR)
             FileUtils.rm_rf(f)
@@ -50,12 +50,10 @@ module Kariyon
     end
 
     def update
-      link = File.join(dest, 'www')
-      root = read_root_path
-      return if File.exist?(link) && (File.readlink(link) == root)
-      File.unlink(link) if File.exist?(link)
-      File.symlink(root, link)
-      message = Message.new({action: 'link', source: root, dest: link})
+      return if File.exist?(root_alias) && (File.readlink(root_alias) == real_root)
+      File.unlink(root_alias) if File.exist?(root_alias)
+      File.symlink(real_root, root_alias)
+      message = Message.new({action: 'link', source: real_root, dest: root_alias})
       Slack.broadcast(message)
       @logger.info(message)
     rescue => e
@@ -87,7 +85,7 @@ module Kariyon
       return File.exist?(File.join(path, 'webapp/lib/MincSite.class.php'))
     end
 
-    def destroot
+    def dest_root
       case Environment.platform
       when 'FreeBSD'
         return '/usr/local/www/apache24/data'
@@ -97,11 +95,28 @@ module Kariyon
     end
 
     def dest
-      return File.join(destroot, Environment.name)
+      return File.join(dest_root, Environment.name)
     end
 
-    def read_root_path
-      current = nil
+    def root_alias
+      return File.join(dest, 'www')
+    end
+
+    def real_root
+      unless @real_root
+        if recent
+          @real_root = File.join(ROOT_DIR, 'htdocs', recent.strftime('%FT%H:%M'))
+        else
+          @real_root = File.join(ROOT_DIR, 'htdocs', Time.new.strftime('%FT%H:%M'))
+          Dir.mkdir(@real_root)
+          File.chown(uid, gid, @real_root)
+        end
+      end
+      return @real_root
+    end
+
+    def recent
+      return @recent if @recent
       Dir.glob(File.join(ROOT_DIR, 'htdocs/*')).sort.each do |f|
         next unless File.directory?(f)
         begin
@@ -112,18 +127,9 @@ module Kariyon
           @logger.error(message)
           next
         end
-        current = time if current.nil? || ((current < time) && (time <= Time.now))
+        @recent = time if @recent.nil? || ((@recent < time) && (time <= Time.now))
       end
-      return create_path(current) if current
-
-      path = create_path(Time.now)
-      Dir.mkdir(path)
-      File.chown(uid, gid, path)
-      return path
-    end
-
-    def create_path(time)
-      return File.join(ROOT_DIR, 'htdocs', time.strftime('%FT%H:%M'))
+      return @recent
     end
 
     def uid
