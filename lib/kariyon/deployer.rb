@@ -58,7 +58,7 @@ module Kariyon
       message = Message.new({action: 'link', source: real_root, dest: root_alias})
       Slack.broadcast(message)
       @mailer.subject = 'フォルダの切り替え'
-      @mailer.body = JSON.pretty_generate(message)
+      @mailer.body = message
       @mailer.deliver
       @logger.info(message)
     rescue => e
@@ -131,7 +131,7 @@ module Kariyon
           Slack.broadcast(message)
           @logger.error(message)
           @mailer.subject = '不正なフォルダ名'
-          @mailer.body = JSON.pretty_generate(message)
+          @mailer.body = message
           @mailer.deliver
           next
         end

@@ -47,6 +47,7 @@ module Kariyon
     end
 
     def body=(value)
+      value = JSON.pretty_generate(value) if value.is_a?(Hash)
       @mail.body = value
     end
 
