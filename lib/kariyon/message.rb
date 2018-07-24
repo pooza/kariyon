@@ -10,7 +10,7 @@ module Kariyon
         self[:message] = values.message
         self[:backtrace] = values.backtrace[0..5]
       else
-        self.update(values)
+        update(values)
       end
       self[:service] = Environment.name
       self[:package] = {

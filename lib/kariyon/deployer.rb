@@ -2,6 +2,7 @@ require 'kariyon/environment'
 require 'kariyon/message'
 require 'kariyon/logger'
 require 'kariyon/slack'
+require 'kariyon/mailer'
 require 'singleton'
 require 'fileutils'
 require 'time'
@@ -13,6 +14,7 @@ module Kariyon
 
     def initialize
       @logger = Logger.new
+      @mailer = Mailer.new
     end
 
     def clean
@@ -55,6 +57,9 @@ module Kariyon
       File.symlink(real_root, root_alias)
       message = Message.new({action: 'link', source: real_root, dest: root_alias})
       Slack.broadcast(message)
+      @mailer.subject = 'フォルダの切り替え'
+      @mailer.body = JSON.pretty_generate(message)
+      @mailer.deliver
       @logger.info(message)
     rescue => e
       message = Message.new(e)
@@ -122,9 +127,12 @@ module Kariyon
         begin
           time = Time.parse(File.basename(f))
         rescue ArgumentError
-          message = Message.new({error: 'invalid folder name', name: File.basename(f)})
+          message = Message.new({error: 'invalid folder name', path: f})
           Slack.broadcast(message)
           @logger.error(message)
+          @mailer.subject = '不正なフォルダ名'
+          @mailer.body = JSON.pretty_generate(message)
+          @mailer.deliver
           next
         end
         @recent = time if @recent.nil? || ((@recent < time) && (time <= Time.now))

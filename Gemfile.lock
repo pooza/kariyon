@@ -13,6 +13,9 @@ GEM
       multi_xml (>= 0.5.2)
     i18n (1.0.1)
       concurrent-ruby (~> 1.0)
+    mail (2.7.0)
+      mini_mime (>= 0.1.1)
+    mini_mime (1.0.0)
     minitest (5.11.3)
     multi_xml (0.6.0)
     public_suffix (3.0.2)
@@ -30,6 +33,7 @@ DEPENDENCIES
   addressable
   bundler
   httparty
+  mail
   rake
   syslog-logger
 
