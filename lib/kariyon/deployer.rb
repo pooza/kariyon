@@ -3,6 +3,7 @@ require 'kariyon/message'
 require 'kariyon/logger'
 require 'kariyon/slack'
 require 'kariyon/mailer'
+require 'kariyon/skeleton'
 require 'singleton'
 require 'fileutils'
 require 'time'
@@ -15,6 +16,7 @@ module Kariyon
     def initialize
       @logger = Logger.new
       @mailer = Mailer.new
+      @skeleton = Skeleton.new
     end
 
     def clean
@@ -52,6 +54,7 @@ module Kariyon
     end
 
     def update
+      @skeleton.copy_to(real_root)
       return if File.exist?(root_alias) && (File.readlink(root_alias) == real_root)
       File.unlink(root_alias) if File.exist?(root_alias)
       File.symlink(real_root, root_alias)
