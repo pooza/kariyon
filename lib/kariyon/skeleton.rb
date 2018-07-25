@@ -1,8 +1,25 @@
+require 'kariyon/message'
+require 'kariyon/logger'
+require 'fileutils'
+
 module Kariyon
   class Skeleton
-    def copy_to(dest)
-      files.each do |f|
-        p f
+    def initialize
+      @logger = Logger.new
+    end
+
+    def copy_to(dir)
+      files.each do |src|
+        dest = File.join(dir, File.basename(src))
+        next if File.exist?(dest)
+        if File.symlink?(src)
+          src = File.readlink(src)
+          File.symlink(src, dest)
+          @logger.info(Message.new({action: 'link', source: src, dest: dest}))
+        else
+          FileUtils.cp(src, dir)
+          @logger.info(Message.new({action: 'copy', source: src, dest: dir}))
+        end
       end
     end
 

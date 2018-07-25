@@ -54,7 +54,6 @@ module Kariyon
     end
 
     def update
-      @skeleton.copy_to(real_root)
       return if File.exist?(root_alias) && (File.readlink(root_alias) == real_root)
       File.unlink(root_alias) if File.exist?(root_alias)
       File.symlink(real_root, root_alias)
@@ -127,6 +126,7 @@ module Kariyon
       return @recent if @recent
       Dir.glob(File.join(ROOT_DIR, 'htdocs/*')).sort.each do |f|
         next unless File.directory?(f)
+        @skeleton.copy_to(f)
         begin
           time = Time.parse(File.basename(f))
         rescue ArgumentError
