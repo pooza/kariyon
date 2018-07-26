@@ -59,7 +59,9 @@ module Kariyon
       @mail['X-Priority'] = value
     end
 
-    def deliver
+    def deliver(subject = nil, body = nil)
+      self.subject = subject if subject
+      self.body = body if body
       @mail.deliver!
     end
   end
