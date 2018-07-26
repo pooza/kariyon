@@ -1,3 +1,4 @@
+require 'kariyon/environment'
 require 'kariyon/message'
 require 'kariyon/logger'
 require 'fileutils'
@@ -20,6 +21,7 @@ module Kariyon
           FileUtils.cp(src, dir)
           @logger.info(Message.new({action: 'copy', source: src, dest: dir}))
         end
+        File.chown(Environment.uid, Environment.gid, dest)
       end
     end
 

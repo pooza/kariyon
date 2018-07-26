@@ -43,7 +43,10 @@ module Kariyon
     def create
       raise 'MINCをアンインストールしてください。' if minc?
       Dir.mkdir(dest, 0o775)
-      FileUtils.touch(File.join(dest, '.kariyon'))
+      File.chown(Environment.uid, Environment.gid, dest)
+      file = File.join(dest, '.kariyon')
+      FileUtils.touch(file)
+      File.chown(Environment.uid, Environment.gid, file)
       @logger.info(Message.new({action: 'create', file: dest}))
       update
     rescue => e
@@ -57,6 +60,7 @@ module Kariyon
       return if File.exist?(root_alias) && (File.readlink(root_alias) == real_root)
       begin
         File.symlink(real_root, root_alias)
+        File.chown(Environment.uid, Environment.gid, root_alias)
       rescue Errno::EEXIST
         File.unlink(root_alias)
         retry
@@ -120,7 +124,7 @@ module Kariyon
         else
           @real_root = File.join(ROOT_DIR, 'htdocs', Time.new.strftime('%FT%H:%M'))
           Dir.mkdir(@real_root)
-          File.chown(uid, gid, @real_root)
+          File.chown(Environment.uid, Environment.gid, @real_root)
         end
       end
       return @real_root
@@ -145,14 +149,6 @@ module Kariyon
         @recent = time if @recent.nil? || ((@recent < time) && (time <= Time.now))
       end
       return @recent
-    end
-
-    def uid
-      return File.stat(ROOT_DIR).uid
-    end
-
-    def gid
-      return File.stat(ROOT_DIR).gid
     end
   end
 end
