@@ -55,8 +55,12 @@ module Kariyon
 
     def update
       return if File.exist?(root_alias) && (File.readlink(root_alias) == real_root)
-      File.unlink(root_alias) if File.exist?(root_alias)
-      File.symlink(real_root, root_alias)
+      begin
+        File.symlink(real_root, root_alias)
+      rescue Errno::EEXIST
+        File.unlink(root_alias)
+        retry
+      end
       message = Message.new({action: 'link', source: real_root, dest: root_alias})
       Slack.broadcast(message)
       @mailer.subject = 'フォルダの切り替え'
