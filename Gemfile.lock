@@ -1,7 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (5.2.0)
+    activesupport (5.2.1)
       concurrent-ruby (~> 1.0, >= 1.0.2)
       i18n (>= 0.7, < 2)
       minitest (~> 5.1)
@@ -11,11 +11,11 @@ GEM
     concurrent-ruby (1.0.5)
     httparty (0.16.2)
       multi_xml (>= 0.5.2)
-    i18n (1.0.1)
+    i18n (1.1.0)
       concurrent-ruby (~> 1.0)
     mail (2.7.0)
       mini_mime (>= 0.1.1)
-    mini_mime (1.0.0)
+    mini_mime (1.0.1)
     minitest (5.11.3)
     multi_xml (0.6.0)
     public_suffix (3.0.2)
