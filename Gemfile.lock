@@ -18,7 +18,7 @@ GEM
     mini_mime (1.0.1)
     minitest (5.11.3)
     multi_xml (0.6.0)
-    public_suffix (3.0.2)
+    public_suffix (3.0.3)
     rake (12.3.1)
     syslog-logger (1.6.8)
     thread_safe (0.3.6)
