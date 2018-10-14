@@ -11,9 +11,9 @@ GEM
     concurrent-ruby (1.0.5)
     httparty (0.16.2)
       multi_xml (>= 0.5.2)
-    i18n (1.1.0)
+    i18n (1.1.1)
       concurrent-ruby (~> 1.0)
-    mail (2.7.0)
+    mail (2.7.1)
       mini_mime (>= 0.1.1)
     mini_mime (1.0.1)
     minitest (5.11.3)
@@ -38,4 +38,4 @@ DEPENDENCIES
   syslog-logger
 
 BUNDLED WITH
-   1.16.3
+   1.16.6
