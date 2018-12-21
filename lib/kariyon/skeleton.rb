@@ -1,6 +1,3 @@
-require 'kariyon/environment'
-require 'kariyon/message'
-require 'kariyon/logger'
 require 'fileutils'
 
 module Kariyon
