@@ -4,8 +4,7 @@ ENV['BUNDLE_GEMFILE'] ||= File.join(ROOT_DIR, 'Gemfile')
 ENV['SSL_CERT_FILE'] ||= File.join(ROOT_DIR, 'cert/cacert.pem')
 
 require 'bundler/setup'
-require 'kariyon/periodic_creator'
-require 'kariyon/deployer'
+require 'kariyon'
 
 desc 'インストール'
 task install: [
@@ -18,6 +17,17 @@ task uninstall: [
   'periodic:clean',
   'htdocs:clean',
 ]
+
+namespace :cert do
+  desc 'update cert'
+  task :update do
+    require 'httparty'
+    File.write(
+      File.join(ROOT_DIR, 'cert/cacert.pem'),
+      HTTParty.get('https://curl.haxx.se/ca/cacert.pem'),
+    )
+  end
+end
 
 namespace :periodic do
   task init: [:clean, :create]
