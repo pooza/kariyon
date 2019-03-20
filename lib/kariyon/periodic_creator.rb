@@ -1,8 +1,3 @@
-require 'kariyon/environment'
-require 'kariyon/deployer'
-require 'kariyon/message'
-require 'kariyon/logger'
-require 'kariyon/slack'
 require 'fileutils'
 require 'singleton'
 
@@ -17,16 +12,14 @@ module Kariyon
     def clean
       raise 'MINCをアンインストールしてください。' if Deployer.instance.minc?
       Dir.glob(File.join(destroot, '*')) do |f|
-        begin
-          if File.symlink?(f) && File.readlink(f).match(ROOT_DIR)
-            File.unlink(f)
-            @logger.info(Message.new({action: 'delete', file: f}))
-          end
-        rescue => e
-          message = Message.new(e)
-          Slack.broadcast(message)
-          @logger.error(message)
+        if File.symlink?(f) && File.readlink(f).match(ROOT_DIR)
+          File.unlink(f)
+          @logger.info(Message.new({action: 'delete', file: f}))
         end
+      rescue => e
+        message = Message.new(e)
+        Slack.broadcast(message)
+        @logger.error(message)
       end
     rescue => e
       message = Message.new(e)

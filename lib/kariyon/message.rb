@@ -1,6 +1,3 @@
-require 'kariyon/package'
-require 'kariyon/environment'
-
 module Kariyon
   class Message < Hash
     def initialize(values)

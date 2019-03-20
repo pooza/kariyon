@@ -1,9 +1,3 @@
-require 'kariyon/environment'
-require 'kariyon/message'
-require 'kariyon/logger'
-require 'kariyon/slack'
-require 'kariyon/mailer'
-require 'kariyon/skeleton'
 require 'singleton'
 require 'fileutils'
 require 'time'
@@ -22,16 +16,14 @@ module Kariyon
     def clean
       raise 'MINCをアンインストールしてください。' if minc?
       Dir.glob(File.join(dest_root, '*')) do |f|
-        begin
-          next unless kariyon?(f)
-          next unless File.readlink(File.join(f, 'www')).match(ROOT_DIR)
-          FileUtils.rm_rf(f)
-          @logger.info(Message.new({action: 'delete', file: f}))
-        rescue => e
-          message = Message.new(e)
-          Slack.broadcast(message)
-          @logger.error(message)
-        end
+        next unless kariyon?(f)
+        next unless File.readlink(File.join(f, 'www')).match(ROOT_DIR)
+        FileUtils.rm_rf(f)
+        @logger.info(Message.new({action: 'delete', file: f}))
+      rescue => e
+        message = Message.new(e)
+        Slack.broadcast(message)
+        @logger.error(message)
       end
     end
 

@@ -1,6 +1,3 @@
-require 'kariyon/environment'
-require 'kariyon/package'
-require 'kariyon/config'
 require 'mail'
 require 'json'
 
@@ -13,7 +10,7 @@ module Kariyon
       @mail = ::Mail.new(charset: 'UTF-8')
       @mail['X-Mailer'] = Package.user_agent
       @mail.from = "root@#{Environment.name}"
-      @mail.to = @config['local']['mail']['to']
+      @mail.to = @config['/mail/to']
       @mail.delivery_method(:sendmail)
       @subject_prefix = "[#{Package.name}] #{Environment.name}"
     end
