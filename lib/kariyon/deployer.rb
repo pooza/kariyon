@@ -17,7 +17,7 @@ module Kariyon
       raise 'MINCをアンインストールしてください。' if minc?
       Dir.glob(File.join(dest_root, '*')) do |f|
         next unless kariyon?(f)
-        next unless File.readlink(File.join(f, 'www')).match(ROOT_DIR)
+        next unless File.readlink(File.join(f, 'www')).match(Environment.dir)
         FileUtils.rm_rf(f)
         @logger.info(Message.new({action: 'delete', file: f}))
       rescue => e
@@ -110,9 +110,9 @@ module Kariyon
     def real_root
       unless @real_root
         if recent
-          @real_root = File.join(ROOT_DIR, 'htdocs', recent.strftime('%FT%H:%M'))
+          @real_root = File.join(Environment.dir, 'htdocs', recent.strftime('%FT%H:%M'))
         else
-          @real_root = File.join(ROOT_DIR, 'htdocs', Time.new.strftime('%FT%H:%M'))
+          @real_root = File.join(Environment.dir, 'htdocs', Time.new.strftime('%FT%H:%M'))
           Dir.mkdir(@real_root)
           File.chown(Environment.uid, Environment.gid, @real_root)
         end
@@ -122,7 +122,7 @@ module Kariyon
 
     def recent
       return @recent if @recent
-      Dir.glob(File.join(ROOT_DIR, 'htdocs/*')).sort.each do |f|
+      Dir.glob(File.join(Environment.dir, 'htdocs/*')).sort.each do |f|
         next unless File.directory?(f)
         @skeleton.copy_to(f)
         begin
