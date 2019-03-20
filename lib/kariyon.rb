@@ -1,6 +1,7 @@
 require 'active_support'
 require 'active_support/core_ext'
 require 'active_support/dependencies/autoload'
+require 'ginseng'
 
 module Kariyon
   extend ActiveSupport::Autoload
@@ -8,16 +9,11 @@ module Kariyon
   autoload :Config
   autoload :Deployer
   autoload :Environment
-  autoload :Error
-  autoload :Feedly
   autoload :Logger
   autoload :Mailer
+  autoload :Message
   autoload :Package
   autoload :PeriodicCreator
   autoload :Skeleton
   autoload :Slack
-
-  autoload_under 'error' do
-    autoload :ConfigError
-  end
 end
