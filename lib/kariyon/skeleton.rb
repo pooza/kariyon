@@ -23,7 +23,7 @@ module Kariyon
     end
 
     def dir
-      return File.join(ROOT_DIR, 'skel')
+      return File.join(Environment.dir, 'skel')
     end
 
     def files

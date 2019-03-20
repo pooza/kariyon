@@ -12,7 +12,7 @@ module Kariyon
     def clean
       raise 'MINCをアンインストールしてください。' if Deployer.instance.minc?
       Dir.glob(File.join(destroot, '*')) do |f|
-        if File.symlink?(f) && File.readlink(f).match(ROOT_DIR)
+        if File.symlink?(f) && File.readlink(f).match(Environment.dir)
           File.unlink(f)
           @logger.info(Message.new({action: 'delete', file: f}))
         end
@@ -42,7 +42,7 @@ module Kariyon
     private
 
     def src
-      return File.join(ROOT_DIR, 'bin/kariyon.rb')
+      return File.join(Environment.dir, 'bin/kariyon.rb')
     end
 
     def dest
