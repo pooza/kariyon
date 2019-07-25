@@ -1,19 +1,19 @@
 module Kariyon
   module Package
     def environment_class
-      return 'Kariyon::Environment'
+      return 'Kariyon::Environment'.constantize
     end
 
     def package_class
-      return 'Kariyon::Package'
+      return 'Kariyon::Package'.constantize
     end
 
     def config_class
-      return 'Kariyon::Config'
+      return 'Kariyon::Config'.constantize
     end
 
     def logger_class
-      return 'Kariyon::Logger'
+      return 'Kariyon::Logger'.constantize
     end
 
     def self.name
