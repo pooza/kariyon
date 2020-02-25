@@ -46,7 +46,7 @@ module Kariyon
       return if File.exist?(root_alias) && (File.readlink(root_alias) == real_root)
       begin
         File.symlink(real_root, root_alias)
-        File.chown(Environment.uid, Environment.gid, root_alias)
+        File.lchown(Environment.uid, Environment.gid, root_alias)
       rescue Errno::EEXIST
         File.unlink(root_alias)
         retry
