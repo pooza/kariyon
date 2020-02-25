@@ -33,7 +33,7 @@ module Kariyon
       File.chown(Environment.uid, Environment.gid, dest)
       FileUtils.touch(dot_kariyon)
       File.chown(Environment.uid, Environment.gid, dot_kariyon)
-      @logger.info(Message.new({action: 'create', file: dest}))
+      @logger.info(Message.new(action: 'create', file: dest))
       update
     rescue => e
       message = Message.new(e)
@@ -51,7 +51,7 @@ module Kariyon
         File.unlink(root_alias)
         retry
       end
-      message = Message.new({action: 'link', source: real_root, dest: root_alias})
+      message = Message.new(action: 'link', source: real_root, dest: root_alias)
       Slack.broadcast(message)
       @mailer.deliver('フォルダの切り替え', message)
       @logger.info(message)
@@ -110,9 +110,9 @@ module Kariyon
     def real_root
       unless @real_root
         if recent
-          @real_root = File.join(Environment.dir, 'htdocs', recent.strftime('%FT%H:%M'))
+          @real_root = File.join(Environment.dir, 'htdocs', recent.strftime(TIME_FORMAT))
         else
-          @real_root = File.join(Environment.dir, 'htdocs', Time.new.strftime('%FT%H:%M'))
+          @real_root = File.join(Environment.dir, 'htdocs', Time.new.strftime(TIME_FORMAT))
           Dir.mkdir(@real_root)
           File.chown(Environment.uid, Environment.gid, @real_root)
         end
@@ -128,7 +128,7 @@ module Kariyon
         begin
           time = Time.parse(File.basename(f))
         rescue ArgumentError
-          message = Message.new({error: 'invalid folder name', path: f})
+          message = Message.new(error: 'invalid folder name', path: f)
           Slack.broadcast(message)
           @logger.error(message)
           @mailer.deliver('不正なフォルダ名', message)
