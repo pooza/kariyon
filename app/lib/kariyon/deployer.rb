@@ -6,6 +6,7 @@ require 'etc'
 module Kariyon
   class Deployer
     include Singleton
+    TIME_FORMAT = '%Y%m%d%H%M'.freeze
 
     def initialize
       @logger = Logger.new
@@ -19,7 +20,7 @@ module Kariyon
         next unless kariyon?(f)
         next unless File.readlink(File.join(f, 'www')).match(Environment.dir)
         FileUtils.rm_rf(f)
-        @logger.info(Message.new({action: 'delete', file: f}))
+        @logger.info(Message.new(action: 'delete', file: f))
       rescue => e
         message = Message.new(e)
         Slack.broadcast(message)
