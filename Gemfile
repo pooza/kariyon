@@ -1,4 +1,4 @@
 source 'https://rubygems.org'
-ruby '2.6.3'
-gem 'ginseng-core', git: 'https://github.com/pooza/ginseng-core.git'
+ruby '2.6.5'
+gem 'ginseng-core', github: 'pooza/ginseng-core'
 gem 'mail'

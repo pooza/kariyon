@@ -13,10 +13,10 @@ module Kariyon
         if File.symlink?(src)
           src = File.readlink(src)
           File.symlink(src, dest)
-          @logger.info(Message.new({action: 'link', source: src, dest: dest}))
+          @logger.info(Message.new(action: 'link', source: src, dest: dest))
         else
           FileUtils.cp(src, dir)
-          @logger.info(Message.new({action: 'copy', source: src, dest: dir}))
+          @logger.info(Message.new(action: 'copy', source: src, dest: dir))
         end
         File.chown(Environment.uid, Environment.gid, dest)
       end

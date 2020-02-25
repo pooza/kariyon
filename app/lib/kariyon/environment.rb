@@ -5,7 +5,7 @@ module Kariyon
     end
 
     def self.dir
-      return File.expand_path('../..', __dir__)
+      return Kariyon.dir
     end
   end
 end

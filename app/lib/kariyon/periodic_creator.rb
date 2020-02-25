@@ -14,7 +14,7 @@ module Kariyon
       Dir.glob(File.join(destroot, '*')) do |f|
         if File.symlink?(f) && File.readlink(f).match(Environment.dir)
           File.unlink(f)
-          @logger.info(Message.new({action: 'delete', file: f}))
+          @logger.info(Message.new(action: 'delete', file: f))
         end
       rescue => e
         message = Message.new(e)
@@ -31,7 +31,7 @@ module Kariyon
     def create
       raise 'MINCをアンインストールしてください。' if Deployer.instance.minc?
       File.symlink(src, dest)
-      @logger.info(Message.new({action: 'link', source: src, dest: dest}))
+      @logger.info(Message.new(action: 'link', source: src, dest: dest))
     rescue => e
       message = Message.new(e)
       Slack.broadcast(message)
