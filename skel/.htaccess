@@ -1,0 +1,10 @@
+Header set X-Frame-Options sameorigin
+Header unset X-Powered-By
+Header set X-Content-Type-Options nosniff
+Header set X-XSS-Protection "1; mode=block"
+RequestHeader unset Proxy
+
+RewriteEngine on
+RewriteRule ^(.*/)*\.git/ / [F,L]
+RewriteCond %{HTTPS} off
+RewriteRule .* https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
