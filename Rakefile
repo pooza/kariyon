@@ -17,6 +17,4 @@ task uninstall: [
   'kariyon:htdocs:clean',
 ]
 
-Dir.glob(File.join(Kariyon::Environment.dir, 'app/task/*.rb')).sort.each do |f|
-  require f
-end
+Kariyon.load_tasks
