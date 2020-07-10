@@ -23,9 +23,8 @@ module Kariyon
         @logger.info(Message.new(action: 'delete', file: f))
       rescue => e
         warn e.message
-        code = 1
+        exit 1
       end
-      exit code if code
     end
 
     def create
@@ -78,7 +77,7 @@ module Kariyon
       raise "'#{dest_root}'内に対象ディレクトリが複数あります。" if 1 < dirs.count
       raise "'#{dest_root}'内に対象ディレクトリがありません。" if dirs.count.zero?
       dir = File.join(dirs.first, 'www/.well-known')
-      raise "'#{dir}'がありません。"
+      raise "'#{dir}'がありません。" unless File.exist?(dir)
       return dir
     rescue => e
       warn e.message
