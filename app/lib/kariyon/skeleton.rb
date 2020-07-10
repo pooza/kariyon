@@ -36,6 +36,11 @@ module Kariyon
       end
     end
 
+    def link_well_known_dir
+      dest = File.join(dir, '.well-known')
+      File.symlink(Deployer.instance.well_known_dir, dest) unless File.exist?(dest)
+    end
+
     private
 
     def ignore_names
