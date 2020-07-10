@@ -22,9 +22,8 @@ module Kariyon
         FileUtils.rm_rf(f)
         @logger.info(Message.new(action: 'delete', file: f))
       rescue => e
-        message = Message.new(e)
-        Slack.broadcast(message)
-        @logger.error(message)
+        warn e.message
+        exit 1
       end
     end
 
@@ -37,9 +36,7 @@ module Kariyon
       @logger.info(Message.new(action: 'create', file: dest))
       update
     rescue => e
-      message = Message.new(e)
-      Slack.broadcast(message)
-      @logger.error(message)
+      warn e.message
       exit 1
     end
 
@@ -71,6 +68,20 @@ module Kariyon
     def kariyon?(parent = nil)
       parent ||= dest
       return File.exist?(File.join(parent, '.kariyon'))
+    end
+
+    def well_known_dir
+      dirs = Dir.glob(File.join(dest_root, '*'))
+      dirs.reject! {|f| File.symlink?(f)}
+      dirs.reject! {|f| kariyon?(f)}
+      raise "'#{dest_root}'内に対象ディレクトリが複数あります。" if 1 < dirs.count
+      raise "'#{dest_root}'内に対象ディレクトリがありません。" if dirs.count.zero?
+      dir = File.join(dirs.first, 'www/.well-known')
+      raise "'#{dir}'がありません。" unless File.exist?(dir)
+      return dir
+    rescue => e
+      warn e.message
+      exit 1
     end
 
     private

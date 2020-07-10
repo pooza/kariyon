@@ -9,6 +9,7 @@ desc 'install'
 task install: [
   'kariyon:periodic:init',
   'kariyon:htdocs:init',
+  'kariyon:skel:well_known_dir',
 ]
 
 desc 'uninstall'
@@ -17,6 +18,4 @@ task uninstall: [
   'kariyon:htdocs:clean',
 ]
 
-Dir.glob(File.join(Kariyon::Environment.dir, 'app/task/*.rb')).sort.each do |f|
-  require f
-end
+Kariyon.load_tasks
