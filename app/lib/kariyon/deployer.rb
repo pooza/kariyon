@@ -1,5 +1,4 @@
 require 'singleton'
-require 'fileutils'
 require 'time'
 require 'etc'
 
