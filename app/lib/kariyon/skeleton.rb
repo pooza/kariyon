@@ -1,5 +1,3 @@
-require 'fileutils'
-
 module Kariyon
   class Skeleton
     def initialize

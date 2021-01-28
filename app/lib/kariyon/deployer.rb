@@ -1,5 +1,4 @@
 require 'singleton'
-require 'fileutils'
 require 'time'
 require 'etc'
 
@@ -134,7 +133,7 @@ module Kariyon
 
     def recent
       return @recent if @recent
-      Dir.glob(File.join(Environment.dir, 'htdocs/*')).sort.each do |f|
+      Dir.glob(File.join(Environment.dir, 'htdocs/*')).each do |f|
         next unless File.directory?(f)
         @skeleton.copy_to(f)
         begin

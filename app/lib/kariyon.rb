@@ -1,4 +1,4 @@
-require 'ginseng'
+require 'bundler/setup'
 
 module Kariyon
   def self.dir
@@ -10,17 +10,16 @@ module Kariyon
     loader = Zeitwerk::Loader.new
     loader.inflector.inflect(config['inflections'])
     loader.push_dir(File.join(dir, 'app/lib'))
-    config['dirs'].each do |d|
-      loader.push_dir(File.join(dir, 'app', d))
-    end
+    loader.collapse('app/lib/mulukhiya/*')
     return loader
   end
 
   def self.load_tasks
-    Dir.glob(File.join(dir, 'app/task/*.rb')).sort.each do |f|
+    Dir.glob(File.join(dir, 'app/task/*.rb')).each do |f|
       require f
     end
   end
 end
 
+Bundler.require
 Kariyon.loader.setup

@@ -1,5 +1,5 @@
 package:
-  version: 1.0.8
+  version: 1.0.9
   url: https://github.com/pooza/kariyon
   authors:
     - Tatsuya Koishi
@@ -7,3 +7,7 @@ package:
     - tkoishi@b-shock.co.jp
 slack:
   hooks: []
+http:
+  retry:
+    limit: 3
+    seconds: 1
