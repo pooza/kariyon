@@ -101,7 +101,7 @@ GEM
       nokogiri (>= 1.8.0)
       nokogumbo (~> 2.0)
     syslog-logger (1.6.8)
-    test-unit (3.3.9)
+    test-unit (3.4.0)
       power_assert
     tzinfo (2.0.4)
       concurrent-ruby (~> 1.0)
@@ -115,6 +115,7 @@ GEM
 
 PLATFORMS
   amd64-freebsd-12
+  ruby
   x86_64-linux
 
 DEPENDENCIES
