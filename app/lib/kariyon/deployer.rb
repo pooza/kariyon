@@ -132,20 +132,19 @@ module Kariyon
     end
 
     def recent
-      return @recent if @recent
-      Dir.glob(File.join(Environment.dir, 'htdocs/*')).each do |f|
-        next unless File.directory?(f)
-        @skeleton.copy_to(f)
-        begin
-          time = Time.parse(File.basename(f))
+      unless @recent
+        dirs = Dir.glob(File.join(Environment.dir, 'htdocs/*')).select {|d| File.directory?(d)}
+        dirs.clone.each do |d|
+          Time.parse(File.basename(d))
         rescue ArgumentError
-          message = Message.new(error: 'invalid folder name', path: f)
+          dirs.delete(d)
+          message = Message.new(error: 'invalid folder name', path: d)
           Slack.broadcast(message)
           @logger.error(message)
           @mailer.deliver('不正なフォルダ名', message)
-          next
         end
-        @recent = time if @recent.nil? || ((@recent < time) && (time <= Time.now))
+        dirs = dirs.map {|d| Time.parse(d)}
+        @recent = dirs.select {|d| d <= Time.now}.max
       end
       return @recent
     end

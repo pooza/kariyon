@@ -16,7 +16,7 @@ AllCops:
     - 'public/**/*'
     - 'config/**/*'
     - 'tmp/**/*'
-  TargetRubyVersion: 3.0
+  TargetRubyVersion: 2.7
 
 Naming/RescuedExceptionsVariableName:
   PreferredName: e
@@ -222,6 +222,7 @@ Metrics/ClassLength:
     - 'test/*'
     - '**/contract/*'
     - '**/controller/*'
+    - '**/service/*'
 
 Metrics/ModuleLength:
   Max: 200
@@ -229,6 +230,7 @@ Metrics/ModuleLength:
     - 'test/*'
     - '**/contract/*'
     - '**/controller/*'
+    - '**/service/*'
 
 Metrics/CyclomaticComplexity:
   Max: 10
