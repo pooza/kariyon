@@ -144,7 +144,7 @@ module Kariyon
           @mailer.deliver('不正なフォルダ名', message)
         end
         dirs = dirs.map {|d| Time.parse(d)}
-        @recent = dirs.select {|d| d < Time.now}.max
+        @recent = dirs.select {|d| d <= Time.now}.max
       end
       return @recent
     end
