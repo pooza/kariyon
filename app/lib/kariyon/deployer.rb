@@ -44,6 +44,7 @@ module Kariyon
       begin
         File.symlink(real_root, root_alias)
         File.lchown(Environment.uid, Environment.gid, root_alias)
+        @skeleton.copy_to(real_root)
       rescue Errno::EEXIST
         File.unlink(root_alias)
         retry
