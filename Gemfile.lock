@@ -103,7 +103,7 @@ GEM
       crass (~> 1.0.2)
       nokogiri (>= 1.8.0)
       nokogumbo (~> 2.0)
-    test-unit (3.4.0)
+    test-unit (3.4.4)
       power_assert
     tzinfo (2.0.4)
       concurrent-ruby (~> 1.0)
