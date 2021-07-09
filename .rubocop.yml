@@ -16,10 +16,14 @@ AllCops:
     - 'public/**/*'
     - 'config/**/*'
     - 'tmp/**/*'
+    - '**/old/**/*'
   TargetRubyVersion: 2.7
 
 Naming/RescuedExceptionsVariableName:
   PreferredName: e
+
+Naming/InclusiveLanguage:
+  Enabled: false
 
 Style/FrozenStringLiteralComment:
   Enabled: false
@@ -143,6 +147,9 @@ Style/SingleArgumentDig:
 Style/StringConcatenation:
   Enabled: true
 
+Style/EmptyMethod:
+  EnforcedStyle: expanded
+
 Style/CombinableLoops: # (new in 0.90)
   Enabled: true
 
@@ -197,6 +204,9 @@ Layout/EmptyLinesAroundAttributeAccessor:
 
 Layout/EndOfLine:
   EnforcedStyle: lf
+
+Layout/LineEndStringConcatenationIndentation:
+  Enabled: false
 
 Metrics/AbcSize:
   Max: 30
@@ -333,3 +343,10 @@ Performance/StringInclude:
 
 Performance/Sum: # (new in 1.8)
   Enabled: true
+
+Rake:
+  Exclude:
+    - '*'
+  Include:
+    - 'Rakefile'
+    - 'app/task/*'
