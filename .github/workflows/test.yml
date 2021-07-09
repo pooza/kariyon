@@ -2,7 +2,7 @@ name: test
 on:
   - push
 env:
-  CI: "true"
+  CI: 'true'
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -20,6 +20,7 @@ jobs:
           gem install bundler
           bundle install --jobs 4 --retry 3
           bundle exec rake bundle:update
+          git diff
           bundle exec rake bundle:check
       - name: Run lint
         run: |
