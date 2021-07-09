@@ -5,6 +5,7 @@ gem 'fileutils'
 gem 'mail'
 
 group :development do
+  gem 'ricecream'
   gem 'rubocop'
   gem 'rubocop-performance'
   gem 'rubocop-rake'
