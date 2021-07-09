@@ -3,5 +3,8 @@
 Thumbs.db
 ._*
 .fuse*
+*.log
 config/local.*
+bin/*.rb
 .sass-cache
+dist
