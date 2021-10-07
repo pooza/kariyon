@@ -10,7 +10,6 @@ jobs:
     strategy:
       matrix:
         ruby:
-          - ruby:2.6
           - ruby:2.7
           - ruby:3.0
     steps:
