@@ -3,5 +3,7 @@ $LOAD_PATH.unshift(File.join(dir, 'app/lib'))
 ENV['BUNDLE_GEMFILE'] ||= File.join(dir, 'Gemfile')
 
 require 'kariyon'
-ENV['RAKE'] = Kariyon::Package.full_name
-Kariyon.load_tasks
+module Kariyon
+  ENV['RAKE'] = Package.full_name
+  load_tasks
+end
