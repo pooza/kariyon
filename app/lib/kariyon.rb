@@ -14,12 +14,24 @@ module Kariyon
     return loader
   end
 
-  def self.load_tasks
-    Dir.glob(File.join(dir, 'app/task/*.rb')).sort.each do |f|
-      require f
-    end
+  def self.setup_debug
+    Ricecream.disable
+    return unless Environment.development?
+    Ricecream.enable
+    Ricecream.include_context = true
+    Ricecream.colorize = true
+    Ricecream.prefix = "#{Package.name} | "
+    Ricecream.define_singleton_method(:arg_to_s, proc {|v| PP.pp(v)})
   end
-end
 
-Bundler.require
-Kariyon.loader.setup
+  def self.load_tasks
+    finder = Ginseng::FileFinder.new
+    finder.dir = File.join(dir, 'app/task')
+    finder.patterns.push('*.rb')
+    finder.patterns.push('*.rake')
+    finder.exec.each {|f| require f}
+  end
+
+  Bundler.require
+  loader.setup
+end
