@@ -89,6 +89,8 @@ GEM
     nokogiri (1.13.3)
       mini_portile2 (~> 2.8.0)
       racc (~> 1.4)
+    nokogiri (1.13.3-x86_64-linux)
+      racc (~> 1.4)
     optparse (0.2.0)
     parallel (1.22.1)
     parser (3.1.1.0)
@@ -145,11 +147,11 @@ GEM
 
 PLATFORMS
   amd64-freebsd-13
+  ruby
+  x86_64-linux
 
 DEPENDENCIES
-  fileutils
   ginseng-core!
-  mail
   ricecream
   rubocop
   rubocop-performance
