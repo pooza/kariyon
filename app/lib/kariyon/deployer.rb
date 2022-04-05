@@ -10,44 +10,30 @@ module Kariyon
     end
 
     def clean
-      Dir.glob(File.join(dest_root, '*')) do |path|
-        next unless kariyon?(path)
-        if mix_mode?
-          if File.exist?(dot_kariyon)
-            File.unlink(dot_kariyon)
-            @logger.info(action: 'delete', file: dot_kariyon)
-          end
-          Dir.glob(File.join(dest, '*')).each do |f|
-            next unless File.symlink?(f)
-            next unless File.readlink(f).match?(Environment.dir)
-            File.unlink(f)
-            @logger.info(action: 'delete', link: f)
-          end
-        else
-          next unless File.readlink(File.join(path, 'www')).match?(Environment.dir)
-          FileUtils.rm_rf(path)
-          @logger.info(action: 'delete', dir: path)
+      if mix_mode?
+        if File.exist?(dot_kariyon)
+          File.unlink(dot_kariyon)
+          @logger.info(action: 'delete', file: dot_kariyon)
         end
-      rescue => e
-        @logger.info(error: e)
-        exit 1
+        Dir.glob(File.join(dest, '*')).select {|p| File.symlink?(p)}.each do |path|
+          next unless File.readlink(f).match?(Environment.dir)
+          File.unlink(path)
+          @logger.info(action: 'delete', link: path)
+        end
+      else
+        FileUtils.rm_rf(dest)
+        @logger.info(action: 'delete', dir: dest)
       end
     end
 
     def create
-      if mix_mode?
-        update_aliases
-      else
+      unless mix_mode?
         Dir.mkdir(dest, 0o775)
         File.chown(Environment.uid, Environment.gid, dest)
         @logger.info(action: 'create', file: dest)
         update_root_alias
       end
-      unless File.exist?(dot_kariyon)
-        FileUtils.touch(dot_kariyon)
-        @logger.info(action: 'create', file: dot_kariyon)
-      end
-      File.chown(Environment.uid, Environment.gid, dot_kariyon)
+      touch_dot_kariyon
     rescue => e
       @logger.info(error: e)
       exit 1
@@ -55,16 +41,21 @@ module Kariyon
 
     def update
       if mix_mode?
-        clean
         update_aliases
       else
         update_root_alias
       end
     end
 
-    def update_aliases
+    def touch_dot_kariyon
+      return if File.exist?(dot_kariyon)
       FileUtils.touch(dot_kariyon)
-      @logger.info(action: 'create', file: dot_kariyon)
+      File.chown(Environment.uid, Environment.gid, dot_kariyon)
+      @logger.info(action: 'touch', file: dot_kariyon)
+    end
+
+    def update_aliases
+      touch_dot_kariyon
       Dir.glob(File.join(real_root, '*')).each do |path|
         dest_alias = File.join(dest, File.basename(path))
         File.symlink(path, dest_alias)
