@@ -9,7 +9,7 @@ module Kariyon
     def clean
       Dir.glob(File.join(destroot, '*')) do |path|
         next unless File.symlink?(path)
-        next unless File.readlink(path).match(Environment.dir)
+        next unless File.readlink(path).match?(Environment.dir)
         File.unlink(path)
         @logger.info(action: 'delete', file: path)
       rescue => e
@@ -33,7 +33,7 @@ module Kariyon
 
     def dest
       case Environment.platform
-      when 'FreeBSD', 'Darwin'
+      when 'FreeBSD'
         return File.join(destroot, "900.kariyon-#{Environment.name}")
       when 'Debian'
         return File.join(destroot, "kariyon-#{Environment.name.tr('.', '-')}")
@@ -42,7 +42,7 @@ module Kariyon
 
     def destroot
       case Environment.platform
-      when 'FreeBSD', 'Darwin'
+      when 'FreeBSD'
         return '/usr/local/etc/periodic/frequently'
       when 'Debian'
         return '/etc/cron.frequently'
