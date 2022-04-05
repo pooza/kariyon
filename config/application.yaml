@@ -5,6 +5,7 @@ package:
     - Tatsuya Koishi
   email:
     - tkoishi@b-shock.co.jp
+mix: false
 slack:
   hooks: []
 http:
