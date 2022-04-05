@@ -95,11 +95,6 @@ module Kariyon
       return @config['/mix'] == true
     end
 
-    def minc?(parent = nil)
-      parent ||= dest
-      return minc3?(parent) || minc2?(parent)
-    end
-
     def kariyon?(parent = nil)
       parent ||= dest
       return File.exist?(dot_kariyon(parent))
@@ -119,18 +114,6 @@ module Kariyon
       exit 1
     end
 
-    def minc3?(parent = nil)
-      parent ||= dest
-      return File.exist?(File.join(parent, 'webapp/lib/Minc3/Site.class.php'))
-    end
-
-    def minc2?(parent = nil)
-      parent ||= dest
-      return File.exist?(File.join(parent, 'webapp/lib/MincSite.class.php'))
-    end
-
-    private
-
     def dest_root
       case Environment.platform
       when 'FreeBSD'
@@ -141,11 +124,8 @@ module Kariyon
     end
 
     def dest
-      if mix_mode?
-        return File.join(dest_root, Environment.name, 'www')
-      else
-        return File.join(dest_root, Environment.name)
-      end
+      return File.join(dest_root, Environment.name, 'www') if mix_mode?
+      return File.join(dest_root, Environment.name)
     end
 
     def dot_kariyon(parent = nil)
@@ -153,9 +133,8 @@ module Kariyon
       return File.join(parent, '.kariyon')
     end
 
-    def root_alias(parent = nil)
-      parent ||= dest
-      return File.join(parent, 'www')
+    def root_alias
+      return File.join(dest, 'www')
     end
 
     def real_root
