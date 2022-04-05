@@ -15,11 +15,7 @@ module Kariyon
           File.unlink(dot_kariyon)
           @logger.info(action: 'delete', file: dot_kariyon)
         end
-        Dir.glob(File.join(dest, '*')).select {|p| File.symlink?(p)}.each do |path|
-          next unless File.readlink(path).match?(Environment.dir)
-          File.unlink(path)
-          @logger.info(action: 'delete', link: path)
-        end
+        clear_aliases
       else
         FileUtils.rm_rf(dest)
         @logger.info(action: 'delete', dir: dest)
@@ -51,7 +47,16 @@ module Kariyon
       end
     end
 
+    def clear_aliases
+      Dir.glob(File.join(dest, '*')).select {|p| File.symlink?(p)}.each do |path|
+        next unless File.readlink(path).match?(Environment.dir)
+        File.unlink(path)
+        @logger.info(action: 'delete', link: path)
+      end
+    end
+
     def update_aliases
+      clear_aliases
       Dir.glob(File.join(real_root, '*')).each do |path|
         dest_alias = File.join(dest, File.basename(path))
         File.symlink(path, dest_alias)
