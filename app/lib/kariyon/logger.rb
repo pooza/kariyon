@@ -3,12 +3,12 @@ module Kariyon
     include Package
 
     def info(message)
-      puts message
+      puts message.to_yaml
       super
     end
 
     def error(message)
-      warn message
+      warn message.to_yaml
       super
     end
   end

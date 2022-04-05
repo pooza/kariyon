@@ -11,7 +11,7 @@ module Kariyon
         next unless File.symlink?(path)
         next unless File.readlink(path).match?(Environment.dir)
         File.unlink(path)
-        @logger.info(action: 'delete', file: path)
+        @logger.info(action: 'delete', link: path)
       rescue => e
         @logger.error(error: e)
       end
@@ -24,8 +24,6 @@ module Kariyon
       @logger.error(error: e)
       exit 1
     end
-
-    private
 
     def src
       return File.join(Environment.dir, 'bin/kariyon.rb')

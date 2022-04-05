@@ -14,7 +14,7 @@ module Kariyon
       Dir.glob(File.join(dest_root, '*')) do |f|
         next unless kariyon?(f)
         next unless File.readlink(File.join(f, 'www')).match?(Environment.dir)
-        #FileUtils.rm_rf(f)
+        # FileUtils.rm_rf(f)
         @logger.info(action: 'delete', file: f)
       rescue => e
         warn e.message
@@ -23,12 +23,12 @@ module Kariyon
     end
 
     def create
-      #Dir.mkdir(dest, 0o775)
-      #File.chown(Environment.uid, Environment.gid, dest)
-      #FileUtils.touch(dot_kariyon)
-      #File.chown(Environment.uid, Environment.gid, dot_kariyon)
+      # Dir.mkdir(dest, 0o775)
+      # File.chown(Environment.uid, Environment.gid, dest)
+      # FileUtils.touch(dot_kariyon)
+      # File.chown(Environment.uid, Environment.gid, dot_kariyon)
       @logger.info(action: 'create', file: dest)
-      #update
+      # update
     rescue => e
       warn e.message
       exit 1
