@@ -13,6 +13,8 @@ module Kariyon
       Dir.glob(File.join(dest_root, '*')) do |f|
         next unless kariyon?(f)
         if mix_mode?
+          File.delete(dot_kariyon)
+          @logger.info(action: 'delete', file: dot_kariyon)
         else
           next unless File.readlink(File.join(f, 'www')).match?(Environment.dir)
           FileUtils.rm_rf(f)
@@ -29,11 +31,13 @@ module Kariyon
       else
         Dir.mkdir(dest, 0o775)
         File.chown(Environment.uid, Environment.gid, dest)
-        FileUtils.touch(dot_kariyon)
         File.chown(Environment.uid, Environment.gid, dot_kariyon)
         @logger.info(action: 'create', file: dest)
         update
       end
+      FileUtils.touch(dot_kariyon)
+      File.chown(Environment.uid, Environment.gid, dot_kariyon)
+      @logger.info(action: 'create', file: dot_kariyon)
     rescue => e
       warn e.message
       exit 1
@@ -66,7 +70,7 @@ module Kariyon
 
     def kariyon?(parent = nil)
       parent ||= dest
-      return File.exist?(File.join(parent, '.kariyon'))
+      return File.exist?(dot_kariyon(parent))
     end
 
     def well_known_dir
