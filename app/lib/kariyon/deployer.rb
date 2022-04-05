@@ -16,7 +16,7 @@ module Kariyon
           @logger.info(action: 'delete', file: dot_kariyon)
         end
         Dir.glob(File.join(dest, '*')).select {|p| File.symlink?(p)}.each do |path|
-          next unless File.readlink(f).match?(Environment.dir)
+          next unless File.readlink(path).match?(Environment.dir)
           File.unlink(path)
           @logger.info(action: 'delete', link: path)
         end
