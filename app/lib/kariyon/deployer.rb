@@ -31,15 +31,19 @@ module Kariyon
         Dir.mkdir(dest, 0o775)
         File.chown(Environment.uid, Environment.gid, dest)
         @logger.info(action: 'create', file: dest)
-        update_root_alias
       end
-      touch_dot_kariyon
+      update
     rescue => e
       @logger.info(error: e)
       exit 1
     end
 
     def update
+      unless File.exist?(dot_kariyon)
+        FileUtils.touch(dot_kariyon)
+        File.chown(Environment.uid, Environment.gid, dot_kariyon)
+        @logger.info(action: 'touch', file: dot_kariyon)
+      end
       if mix_mode?
         update_aliases
       else
@@ -47,15 +51,7 @@ module Kariyon
       end
     end
 
-    def touch_dot_kariyon
-      return if File.exist?(dot_kariyon)
-      FileUtils.touch(dot_kariyon)
-      File.chown(Environment.uid, Environment.gid, dot_kariyon)
-      @logger.info(action: 'touch', file: dot_kariyon)
-    end
-
     def update_aliases
-      touch_dot_kariyon
       Dir.glob(File.join(real_root, '*')).each do |path|
         dest_alias = File.join(dest, File.basename(path))
         File.symlink(path, dest_alias)
@@ -77,9 +73,6 @@ module Kariyon
         File.unlink(root_alias)
         retry
       end
-    rescue => e
-      @logger.error(error: e)
-      exit 1
     end
 
     def mix_mode?
