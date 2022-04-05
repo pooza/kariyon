@@ -110,7 +110,7 @@ module Kariyon
       raise "'#{dir}'がありません。" unless File.exist?(dir)
       return dir
     rescue => e
-      warn e.message
+      logger.error(error: e)
       exit 1
     end
 
