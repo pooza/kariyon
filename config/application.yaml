@@ -6,8 +6,6 @@ package:
   email:
     - tkoishi@b-shock.co.jp
 mix: false
-slack:
-  hooks: []
 http:
   retry:
     limit: 3

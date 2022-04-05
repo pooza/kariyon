@@ -1,6 +1,3 @@
-require 'mail'
-require 'json'
-
 module Kariyon
   class Mailer
     attr_accessor :subject_prefix

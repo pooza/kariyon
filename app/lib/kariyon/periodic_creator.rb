@@ -1,5 +1,3 @@
-require 'singleton'
-
 module Kariyon
   class PeriodicCreator
     include Singleton
