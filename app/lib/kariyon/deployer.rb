@@ -13,9 +13,10 @@ module Kariyon
       Dir.glob(File.join(dest_root, '*')) do |path|
         next unless kariyon?(path)
         if mix_mode?
-          next unless File.exist?(dot_kariyon)
-          File.unlink(dot_kariyon)
-          @logger.info(action: 'delete', file: dot_kariyon)
+          if File.exist?(dot_kariyon)
+            File.unlink(dot_kariyon)
+            @logger.info(action: 'delete', file: dot_kariyon)
+          end
           Dir.glob(File.join(dest, '*')).each do |f|
             next unless File.symlink?(f)
             next unless File.readlink(f).match?(Environment.dir)
@@ -54,6 +55,7 @@ module Kariyon
 
     def update
       if mix_mode?
+        clean
         update_aliases
       else
         update_root_alias
@@ -61,11 +63,15 @@ module Kariyon
     end
 
     def update_aliases
+      FileUtils.touch(dot_kariyon)
+      @logger.info(action: 'create', file: dot_kariyon)
       Dir.glob(File.join(real_root, '*')).each do |path|
         dest_alias = File.join(dest, File.basename(path))
         File.symlink(path, dest_alias)
         File.lchown(Environment.uid, Environment.gid, dest_alias)
         @logger.info(action: 'link', source: path, dest: dest_alias)
+      rescue => e
+        @logger.error(error: e)
       end
     end
 
