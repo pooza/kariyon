@@ -15,6 +15,7 @@ module Kariyon
         next unless kariyon?(f)
         if mix_mode?
         else
+          ic f
           next unless File.readlink(File.join(f, 'www')).match?(Environment.dir)
           #FileUtils.rm_rf(f)
           @logger.info(action: 'delete', file: f)
