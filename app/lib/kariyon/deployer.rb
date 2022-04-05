@@ -15,7 +15,6 @@ module Kariyon
         next unless kariyon?(f)
         if mix_mode?
         else
-          ic f
           next unless File.readlink(File.join(f, 'www')).match?(Environment.dir)
           #FileUtils.rm_rf(f)
           @logger.info(action: 'delete', file: f)
@@ -27,12 +26,15 @@ module Kariyon
     end
 
     def create
-      # Dir.mkdir(dest, 0o775)
-      # File.chown(Environment.uid, Environment.gid, dest)
-      # FileUtils.touch(dot_kariyon)
-      # File.chown(Environment.uid, Environment.gid, dot_kariyon)
-      @logger.info(action: 'create', file: dest)
-      # update
+      if mix_mode?
+      else
+        Dir.mkdir(dest, 0o775)
+        File.chown(Environment.uid, Environment.gid, dest)
+        FileUtils.touch(dot_kariyon)
+        File.chown(Environment.uid, Environment.gid, dot_kariyon)
+        @logger.info(action: 'create', file: dest)
+        update
+      end
     rescue => e
       warn e.message
       exit 1
