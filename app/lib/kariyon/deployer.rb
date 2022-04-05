@@ -10,15 +10,15 @@ module Kariyon
     end
 
     def clean
-      Dir.glob(File.join(dest_root, '*')) do |f|
-        next unless kariyon?(f)
+      Dir.glob(File.join(dest_root, '*')) do |path|
+        next unless kariyon?(path)
         if mix_mode?
           File.delete(dot_kariyon)
           @logger.info(action: 'delete', file: dot_kariyon)
         else
-          next unless File.readlink(File.join(f, 'www')).match?(Environment.dir)
-          FileUtils.rm_rf(f)
-          @logger.info(action: 'delete', file: f)
+          next unless File.readlink(File.join(path, 'www')).match?(Environment.dir)
+          FileUtils.rm_rf(path)
+          @logger.info(action: 'delete', dir: path)
         end
       rescue => e
         warn e.message
