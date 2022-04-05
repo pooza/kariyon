@@ -13,9 +13,12 @@ module Kariyon
     def clean
       Dir.glob(File.join(dest_root, '*')) do |f|
         next unless kariyon?(f)
-        next unless File.readlink(File.join(f, 'www')).match?(Environment.dir)
-        # FileUtils.rm_rf(f)
-        @logger.info(action: 'delete', file: f)
+        if mix_mode?
+        else
+          next unless File.readlink(File.join(f, 'www')).match?(Environment.dir)
+          #FileUtils.rm_rf(f)
+          @logger.info(action: 'delete', file: f)
+        end
       rescue => e
         warn e.message
         exit 1
