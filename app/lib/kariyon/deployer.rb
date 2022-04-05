@@ -11,15 +11,15 @@ module Kariyon
       @logger = Logger.new
       @mailer = Mailer.new
       @skeleton = Skeleton.new
+      @config = Config.instance
     end
 
     def clean
-      raise 'MINCをアンインストールしてください。' if minc?
       Dir.glob(File.join(dest_root, '*')) do |f|
         next unless kariyon?(f)
         next unless File.readlink(File.join(f, 'www')).match(Environment.dir)
         FileUtils.rm_rf(f)
-        @logger.info(Message.new(action: 'delete', file: f))
+        @logger.info(action: 'delete', file: f)
       rescue => e
         warn e.message
         exit 1
@@ -27,12 +27,12 @@ module Kariyon
     end
 
     def create
-      raise 'MINCをアンインストールしてください。' if minc?
+      raise 'MINCをアンインストールしてください。' unless enable?
       Dir.mkdir(dest, 0o775)
       File.chown(Environment.uid, Environment.gid, dest)
       FileUtils.touch(dot_kariyon)
       File.chown(Environment.uid, Environment.gid, dot_kariyon)
-      @logger.info(Message.new(action: 'create', file: dest))
+      @logger.info(action: 'create', file: dest)
       update
     rescue => e
       warn e.message
@@ -50,14 +50,21 @@ module Kariyon
         retry
       end
       message = Message.new(action: 'link', source: real_root, dest: root_alias)
-      Slack.broadcast(message)
       @mailer.deliver('フォルダの切り替え', message)
       @logger.info(message)
     rescue => e
-      message = Message.new(e)
-      Slack.broadcast(message)
-      @logger.error(message)
+      @logger.error(error: e)
       exit 1
+    end
+
+    def enable?
+      return true if mix_mode?
+      return true unless minc?
+      return false
+    end
+
+    def mix_mode?
+      return @config['/mix'] == true
     end
 
     def minc?(parent = nil)
@@ -84,8 +91,6 @@ module Kariyon
       exit 1
     end
 
-    private
-
     def minc3?(parent = nil)
       parent ||= dest
       return File.exist?(File.join(parent, 'webapp/lib/Minc3/Site.class.php'))
@@ -95,6 +100,8 @@ module Kariyon
       parent ||= dest
       return File.exist?(File.join(parent, 'webapp/lib/MincSite.class.php'))
     end
+
+    private
 
     def dest_root
       case Environment.platform
@@ -140,7 +147,6 @@ module Kariyon
         rescue ArgumentError
           dirs.delete(d)
           message = Message.new(error: 'invalid folder name', path: d)
-          Slack.broadcast(message)
           @logger.error(message)
           @mailer.deliver('不正なフォルダ名', message)
         end
