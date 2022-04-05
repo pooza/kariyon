@@ -11,6 +11,7 @@ module Kariyon
         if File.symlink?(src)
           src = File.readlink(src)
           File.symlink(src, dest)
+          File.lchown(Environment.uid, Environment.gid, dest)
           @logger.info(action: 'link', source: src, dest: dest)
         else
           FileUtils.cp(src, dir)
@@ -36,7 +37,10 @@ module Kariyon
 
     def link_well_known_dir
       dest = File.join(dir, '.well-known')
-      File.symlink(Deployer.instance.well_known_dir, dest) unless File.exist?(dest)
+      return if File.exist?(dest)
+      File.symlink(Deployer.instance.well_known_dir, dest)
+      File.lchown(Environment.uid, Environment.gid, dest)
+      @logger.info(action: 'link', source: src, dest: dest)
     end
 
     private

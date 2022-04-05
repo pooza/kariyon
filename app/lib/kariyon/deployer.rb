@@ -40,6 +40,7 @@ module Kariyon
         File.chown(Environment.uid, Environment.gid, dot_kariyon)
         @logger.info(action: 'touch', file: dot_kariyon)
       end
+      clear_aliases
       if mix_mode?
         update_aliases
       else
@@ -53,10 +54,12 @@ module Kariyon
         File.unlink(path)
         @logger.info(action: 'delete', link: path)
       end
+      return unless File.exist?(root_alias)
+      File.unlink(root_alias)
+      @logger.info(action: 'delete', link: root_alias)
     end
 
     def update_aliases
-      clear_aliases
       Dir.glob(File.join(real_root, '*')).each do |path|
         dest_alias = File.join(dest, File.basename(path))
         File.symlink(path, dest_alias)
@@ -68,16 +71,13 @@ module Kariyon
     end
 
     def update_root_alias
-      return if File.exist?(root_alias) && (File.readlink(root_alias) == real_root)
-      begin
-        File.symlink(real_root, root_alias)
-        File.lchown(Environment.uid, Environment.gid, root_alias)
-        @logger.info(action: 'link', source: real_root, dest: root_alias)
-        @skeleton.copy_to(real_root)
-      rescue Errno::EEXIST
-        File.unlink(root_alias)
-        retry
-      end
+      File.symlink(real_root, root_alias)
+      File.lchown(Environment.uid, Environment.gid, root_alias)
+      @logger.info(action: 'link', source: real_root, dest: root_alias)
+      @skeleton.copy_to(real_root)
+    rescue Errno::EEXIST
+      File.unlink(root_alias)
+      retry
     end
 
     def mix_mode?
