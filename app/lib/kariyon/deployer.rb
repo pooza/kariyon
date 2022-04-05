@@ -5,7 +5,6 @@ module Kariyon
 
     def initialize
       @logger = Logger.new
-      @mailer = Ginseng::Mailer.new
       @skeleton = Skeleton.new
       @config = Config.instance
     end
@@ -16,7 +15,7 @@ module Kariyon
         if mix_mode?
         else
           next unless File.readlink(File.join(f, 'www')).match?(Environment.dir)
-          #FileUtils.rm_rf(f)
+          FileUtils.rm_rf(f)
           @logger.info(action: 'delete', file: f)
         end
       rescue => e
@@ -50,9 +49,7 @@ module Kariyon
         File.unlink(root_alias)
         retry
       end
-      message = Message.new(action: 'link', source: real_root, dest: root_alias)
-      @mailer.deliver('フォルダの切り替え', message)
-      @logger.info(message)
+      @logger.info(action: 'link', source: real_root, dest: root_alias)
     rescue => e
       @logger.error(error: e)
       exit 1
@@ -141,9 +138,7 @@ module Kariyon
           Time.parse(File.basename(d))
         rescue ArgumentError
           dirs.delete(d)
-          message = Message.new(error: 'invalid folder name', path: d)
-          @logger.error(message)
-          @mailer.deliver('不正なフォルダ名', message)
+          @logger.error(error: 'invalid folder name', path: d)
         end
         dirs = dirs.map {|d| Time.parse(File.basename(d))}
         @recent = dirs.select {|d| d <= Time.now}.max
