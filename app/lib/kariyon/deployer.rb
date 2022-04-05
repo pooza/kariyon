@@ -13,47 +13,73 @@ module Kariyon
       Dir.glob(File.join(dest_root, '*')) do |path|
         next unless kariyon?(path)
         if mix_mode?
-          File.delete(dot_kariyon)
+          next unless File.exist?(dot_kariyon)
+          File.unlink(dot_kariyon)
           @logger.info(action: 'delete', file: dot_kariyon)
+          Dir.glob(File.join(dest, '*')).each do |f|
+            next unless File.symlink?(f)
+            next unless File.readlink(f).match?(Environment.dir)
+            File.unlink(f)
+            @logger.info(action: 'delete', link: f)
+          end
         else
           next unless File.readlink(File.join(path, 'www')).match?(Environment.dir)
           FileUtils.rm_rf(path)
           @logger.info(action: 'delete', dir: path)
         end
       rescue => e
-        warn e.message
+        @logger.info(error: e)
         exit 1
       end
     end
 
     def create
       if mix_mode?
+        update_aliases
       else
         Dir.mkdir(dest, 0o775)
         File.chown(Environment.uid, Environment.gid, dest)
-        File.chown(Environment.uid, Environment.gid, dot_kariyon)
         @logger.info(action: 'create', file: dest)
-        update
+        update_root_alias
       end
-      FileUtils.touch(dot_kariyon)
+      unless File.exist?(dot_kariyon)
+        FileUtils.touch(dot_kariyon)
+        @logger.info(action: 'create', file: dot_kariyon)
+      end
       File.chown(Environment.uid, Environment.gid, dot_kariyon)
-      @logger.info(action: 'create', file: dot_kariyon)
     rescue => e
-      warn e.message
+      @logger.info(error: e)
       exit 1
     end
 
     def update
+      if mix_mode?
+        update_aliases
+      else
+        update_root_alias
+      end
+    end
+
+    def update_aliases
+      Dir.glob(File.join(real_root, '*')).each do |path|
+        dest_alias = File.join(dest, File.basename(path))
+        File.symlink(path, dest_alias)
+        File.lchown(Environment.uid, Environment.gid, dest_alias)
+        @logger.info(action: 'link', source: path, dest: dest_alias)
+      end
+    end
+
+    def update_root_alias
       return if File.exist?(root_alias) && (File.readlink(root_alias) == real_root)
       begin
         File.symlink(real_root, root_alias)
         File.lchown(Environment.uid, Environment.gid, root_alias)
+        @logger.info(action: 'link', source: real_root, dest: root_alias)
         @skeleton.copy_to(real_root)
       rescue Errno::EEXIST
         File.unlink(root_alias)
         retry
       end
-      @logger.info(action: 'link', source: real_root, dest: root_alias)
     rescue => e
       @logger.error(error: e)
       exit 1
@@ -109,7 +135,11 @@ module Kariyon
     end
 
     def dest
-      return File.join(dest_root, Environment.name)
+      if mix_mode?
+        return File.join(dest_root, Environment.name, 'www')
+      else
+        return File.join(dest_root, Environment.name)
+      end
     end
 
     def dot_kariyon(parent = nil)
