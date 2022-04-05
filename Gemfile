@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '>=2.7'
+ruby '~>2.7.0'
 gem 'ginseng-core', github: 'pooza/ginseng-core', require: 'ginseng'
 
 group :development do
