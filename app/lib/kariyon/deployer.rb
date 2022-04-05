@@ -5,7 +5,7 @@ module Kariyon
 
     def initialize
       @logger = Logger.new
-      @mailer = Mailer.new
+      @mailer = Ginseng::Mailer.new
       @skeleton = Skeleton.new
       @config = Config.instance
     end
