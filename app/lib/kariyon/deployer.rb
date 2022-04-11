@@ -127,7 +127,7 @@ module Kariyon
     end
 
     def session
-      return {} unless File.readable?(sesion_path)
+      return {} unless File.readable?(session_path)
       return JSON.parse(File.read(sesion_path))
     end
 
