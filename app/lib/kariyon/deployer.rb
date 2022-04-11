@@ -141,6 +141,8 @@ module Kariyon
       mailer.subject = "#{Environment.name} フォルダの切り替え"
       mailer.body = "#{real_root} に切り替えました。"
       mailer.deliver
+    rescue => e
+      @logger.error(error: e)
     end
 
     def root_alias
