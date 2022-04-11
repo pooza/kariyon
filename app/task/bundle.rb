@@ -6,9 +6,6 @@ namespace :bundle do
 
   desc 'check gems'
   task :check do
-    unless Kariyon::Environment.gem_fresh?
-      warn 'gems is not fresh.'
-      exit 1
-    end
+    exit 1 unless Kariyon::Environment.gem_fresh?
   end
 end

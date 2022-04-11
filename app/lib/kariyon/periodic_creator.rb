@@ -1,5 +1,3 @@
-require 'singleton'
-
 module Kariyon
   class PeriodicCreator
     include Singleton
@@ -9,36 +7,23 @@ module Kariyon
     end
 
     def clean
-      raise 'MINCをアンインストールしてください。' if Deployer.instance.minc?
-      Dir.glob(File.join(destroot, '*')) do |f|
-        if File.symlink?(f) && File.readlink(f).match(Environment.dir)
-          File.unlink(f)
-          @logger.info(Message.new(action: 'delete', file: f))
-        end
+      Dir.glob(File.join(destroot, '*')) do |path|
+        next unless File.symlink?(path)
+        next unless File.readlink(path).match?(Environment.dir)
+        File.unlink(path)
+        @logger.info(action: 'delete', link: path)
       rescue => e
-        message = Message.new(e)
-        Slack.broadcast(message)
-        @logger.error(message)
+        @logger.error(error: e)
       end
-    rescue => e
-      message = Message.new(e)
-      Slack.broadcast(message)
-      @logger.error(message)
-      exit 1
     end
 
     def create
-      raise 'MINCをアンインストールしてください。' if Deployer.instance.minc?
       File.symlink(src, dest)
-      @logger.info(Message.new(action: 'link', source: src, dest: dest))
+      @logger.info(action: 'link', source: src, dest: dest)
     rescue => e
-      message = Message.new(e)
-      Slack.broadcast(message)
-      @logger.error(message)
+      @logger.error(error: e)
       exit 1
     end
-
-    private
 
     def src
       return File.join(Environment.dir, 'bin/kariyon.rb')
@@ -46,7 +31,7 @@ module Kariyon
 
     def dest
       case Environment.platform
-      when 'FreeBSD', 'Darwin'
+      when 'FreeBSD'
         return File.join(destroot, "900.kariyon-#{Environment.name}")
       when 'Debian'
         return File.join(destroot, "kariyon-#{Environment.name.tr('.', '-')}")
@@ -55,7 +40,7 @@ module Kariyon
 
     def destroot
       case Environment.platform
-      when 'FreeBSD', 'Darwin'
+      when 'FreeBSD'
         return '/usr/local/etc/periodic/frequently'
       when 'Debian'
         return '/etc/cron.frequently'

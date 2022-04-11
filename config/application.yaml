@@ -1,12 +1,11 @@
 package:
-  version: 1.0.14
+  version: 1.1.0
   url: https://github.com/pooza/kariyon
   authors:
     - Tatsuya Koishi
   email:
     - tkoishi@b-shock.co.jp
-slack:
-  hooks: []
+mix: false
 http:
   retry:
     limit: 3

@@ -1,7 +1,3 @@
-require 'singleton'
-require 'time'
-require 'etc'
-
 module Kariyon
   class Deployer
     include Singleton
@@ -9,65 +5,90 @@ module Kariyon
 
     def initialize
       @logger = Logger.new
-      @mailer = Mailer.new
       @skeleton = Skeleton.new
+      @config = Config.instance
     end
 
     def clean
-      raise 'MINCをアンインストールしてください。' if minc?
-      Dir.glob(File.join(dest_root, '*')) do |f|
-        next unless kariyon?(f)
-        next unless File.readlink(File.join(f, 'www')).match(Environment.dir)
-        FileUtils.rm_rf(f)
-        @logger.info(Message.new(action: 'delete', file: f))
-      rescue => e
-        warn e.message
-        exit 1
+      if mix_mode?
+        if File.exist?(dot_kariyon)
+          File.unlink(dot_kariyon)
+          @logger.info(action: 'delete', file: dot_kariyon)
+        end
+        clear_aliases
+      else
+        FileUtils.rm_rf(dest)
+        @logger.info(action: 'delete', dir: dest)
       end
     end
 
     def create
-      raise 'MINCをアンインストールしてください。' if minc?
-      Dir.mkdir(dest, 0o775)
-      File.chown(Environment.uid, Environment.gid, dest)
-      FileUtils.touch(dot_kariyon)
-      File.chown(Environment.uid, Environment.gid, dot_kariyon)
-      @logger.info(Message.new(action: 'create', file: dest))
+      unless mix_mode?
+        Dir.mkdir(dest, 0o775)
+        File.chown(Environment.uid, Environment.gid, dest)
+        @logger.info(action: 'create', file: dest)
+      end
       update
     rescue => e
-      warn e.message
+      @logger.info(error: e)
       exit 1
     end
 
     def update
-      return if File.exist?(root_alias) && (File.readlink(root_alias) == real_root)
-      begin
-        File.symlink(real_root, root_alias)
-        File.lchown(Environment.uid, Environment.gid, root_alias)
-        @skeleton.copy_to(real_root)
-      rescue Errno::EEXIST
-        File.unlink(root_alias)
-        retry
+      @logger.info(action: 'start')
+      unless File.exist?(dot_kariyon)
+        FileUtils.touch(dot_kariyon)
+        File.chown(Environment.uid, Environment.gid, dot_kariyon)
+        @logger.info(action: 'touch', file: dot_kariyon)
       end
-      message = Message.new(action: 'link', source: real_root, dest: root_alias)
-      Slack.broadcast(message)
-      @mailer.deliver('フォルダの切り替え', message)
-      @logger.info(message)
-    rescue => e
-      message = Message.new(e)
-      Slack.broadcast(message)
-      @logger.error(message)
-      exit 1
+      clear_aliases
+      if mix_mode?
+        update_aliases
+      else
+        update_root_alias
+      end
+      @logger.info(action: 'end')
     end
 
-    def minc?(parent = nil)
-      parent ||= dest
-      return minc3?(parent) || minc2?(parent)
+    def clear_aliases
+      Dir.glob(File.join(dest, '*')).select {|p| File.symlink?(p)}.each do |path|
+        next unless File.readlink(path).match?(Environment.dir)
+        File.unlink(path)
+        @logger.info(action: 'delete', link: path)
+      end
+      return unless File.exist?(root_alias)
+      File.unlink(root_alias)
+      @logger.info(action: 'delete', link: root_alias)
+    end
+
+    def update_aliases
+      Dir.glob(File.join(real_root, '*')).each do |path|
+        dest_alias = File.join(dest, File.basename(path))
+        File.symlink(path, dest_alias)
+        File.lchown(Environment.uid, Environment.gid, dest_alias)
+        @logger.info(action: 'link', source: path, dest: dest_alias)
+      rescue => e
+        @logger.error(error: e)
+      end
+    end
+
+    def update_root_alias
+      File.symlink(real_root, root_alias)
+      File.lchown(Environment.uid, Environment.gid, root_alias)
+      @logger.info(action: 'link', source: real_root, dest: root_alias)
+      @skeleton.copy_to(real_root)
+    rescue Errno::EEXIST
+      File.unlink(root_alias)
+      retry
+    end
+
+    def mix_mode?
+      return @config['/mix'] == true
     end
 
     def kariyon?(parent = nil)
       parent ||= dest
-      return File.exist?(File.join(parent, '.kariyon'))
+      return File.exist?(dot_kariyon(parent))
     end
 
     def well_known_dir
@@ -80,20 +101,8 @@ module Kariyon
       raise "'#{dir}'がありません。" unless File.exist?(dir)
       return dir
     rescue => e
-      warn e.message
+      logger.error(error: e)
       exit 1
-    end
-
-    private
-
-    def minc3?(parent = nil)
-      parent ||= dest
-      return File.exist?(File.join(parent, 'webapp/lib/Minc3/Site.class.php'))
-    end
-
-    def minc2?(parent = nil)
-      parent ||= dest
-      return File.exist?(File.join(parent, 'webapp/lib/MincSite.class.php'))
     end
 
     def dest_root
@@ -106,6 +115,7 @@ module Kariyon
     end
 
     def dest
+      return File.join(dest_root, Environment.name, 'www') if mix_mode?
       return File.join(dest_root, Environment.name)
     end
 
@@ -114,9 +124,27 @@ module Kariyon
       return File.join(parent, '.kariyon')
     end
 
-    def root_alias(parent = nil)
-      parent ||= dest
-      return File.join(parent, 'www')
+    def session_path
+      return File.join('/tmp', Package.name)
+    end
+
+    def session
+      return {} unless File.readable?(session_path)
+      return JSON.parse(File.read(session_path))
+    end
+
+    def session=(values)
+      prev = session['recent']
+      File.write(session_path, values.to_json)
+      return unless prev < session['recent']
+      mailer = Mailer.new
+      mailer.subject = "#{Environment.name} フォルダの切り替え"
+      mailer.body = "#{real_root} に切り替えました。"
+      mailer.deliver
+    end
+
+    def root_alias
+      return File.join(dest, 'www')
     end
 
     def real_root
@@ -139,13 +167,11 @@ module Kariyon
           Time.parse(File.basename(d))
         rescue ArgumentError
           dirs.delete(d)
-          message = Message.new(error: 'invalid folder name', path: d)
-          Slack.broadcast(message)
-          @logger.error(message)
-          @mailer.deliver('不正なフォルダ名', message)
+          @logger.error(error: 'invalid folder name', path: d)
         end
         dirs = dirs.map {|d| Time.parse(File.basename(d))}
         @recent = dirs.select {|d| d <= Time.now}.max
+        self.session = {recent: @recent}
       end
       return @recent
     end
