@@ -35,6 +35,7 @@ module Kariyon
     end
 
     def update
+      @logger.info(action: 'start')
       unless File.exist?(dot_kariyon)
         FileUtils.touch(dot_kariyon)
         File.chown(Environment.uid, Environment.gid, dot_kariyon)
@@ -46,6 +47,7 @@ module Kariyon
       else
         update_root_alias
       end
+      @logger.info(action: 'end')
     end
 
     def clear_aliases
