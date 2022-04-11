@@ -122,6 +122,25 @@ module Kariyon
       return File.join(parent, '.kariyon')
     end
 
+    def session_path
+      return File.join('/tmp', Package.name)
+    end
+
+    def session
+      return {} unless File.readable?(sesion_path)
+      return JSON.parse(File.read(sesion_path))
+    end
+
+    def session=(values)
+      prev = session['recent']
+      File.write(session_path, values.to_json)
+      return unless prev < session['recent']
+      mailer = Mailer.new
+      mailer.subject = Environment.name
+      mailer.body = "フォルダを切り替えました。\n#{session['recent']}"
+      mailer.deliver
+    end
+
     def root_alias
       return File.join(dest, 'www')
     end
@@ -150,6 +169,7 @@ module Kariyon
         end
         dirs = dirs.map {|d| Time.parse(File.basename(d))}
         @recent = dirs.select {|d| d <= Time.now}.max
+        self.session = {recent: @recent}
       end
       return @recent
     end
