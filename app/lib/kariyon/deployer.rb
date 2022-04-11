@@ -136,8 +136,8 @@ module Kariyon
       File.write(session_path, values.to_json)
       return unless prev < session['recent']
       mailer = Mailer.new
-      mailer.subject = Environment.name
-      mailer.body = "フォルダを切り替えました。\n#{session['recent']}"
+      mailer.subject = "#{Environment.name} フォルダの切り替え"
+      mailer.body = "#{real_root} に切り替えました。"
       mailer.deliver
     end
 
