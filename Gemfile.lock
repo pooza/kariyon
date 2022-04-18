@@ -1,8 +1,8 @@
 GIT
   remote: https://github.com/pooza/ginseng-core.git
-  revision: 3d2f0b8a7eae8425de30a197c62bca24171b6c0c
+  revision: 041536a66d5e7367dd3e6661173900f3f18b2af2
   specs:
-    ginseng-core (1.12.2)
+    ginseng-core (1.13.1)
       activesupport (>= 6.1.3.2)
       addressable (>= 2.8.0)
       bundler (~> 2.0)
@@ -20,7 +20,7 @@ GIT
       multi_json
       net-protocol
       net-smtp
-      nokogiri (>= 1.12.5)
+      nokogiri (>= 1.13.4)
       optparse
       rake
       rest-client
@@ -84,17 +84,17 @@ GEM
       net-protocol
       timeout
     netrc (0.11.0)
-    nokogiri (1.13.3)
+    nokogiri (1.13.4)
       mini_portile2 (~> 2.8.0)
       racc (~> 1.4)
-    nokogiri (1.13.3-x86_64-linux)
+    nokogiri (1.13.4-x86_64-linux)
       racc (~> 1.4)
     optparse (0.2.0)
     parallel (1.22.1)
     parser (3.1.1.0)
       ast (~> 2.4.1)
     power_assert (2.0.1)
-    public_suffix (4.0.6)
+    public_suffix (4.0.7)
     racc (1.6.0)
     rainbow (3.1.1)
     rake (13.0.6)
