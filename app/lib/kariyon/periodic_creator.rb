@@ -31,7 +31,7 @@ module Kariyon
 
     def dest
       case Environment.platform
-      when 'FreeBSD'
+      when :free_bsd, 'FreeBSD'
         return File.join(destroot, "900.kariyon-#{Environment.name}")
       when 'Debian'
         return File.join(destroot, "kariyon-#{Environment.name.tr('.', '-')}")
@@ -40,7 +40,7 @@ module Kariyon
 
     def destroot
       case Environment.platform
-      when 'FreeBSD'
+      when :free_bsd, 'FreeBSD'
         return '/usr/local/etc/periodic/frequently'
       when 'Debian'
         return '/etc/cron.frequently'

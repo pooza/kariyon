@@ -9,5 +9,6 @@ ENV['BUNDLE_GEMFILE'] ||= File.join(dir, 'Gemfile')
 Dir.chdir(dir)
 require 'kariyon'
 module Kariyon
+  sleep 3
   Deployer.instance.update
 end

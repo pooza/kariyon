@@ -17,7 +17,7 @@ AllCops:
     - '**/Rakefile'
     - '**/config.ru'
   NewCops: enable
-  TargetRubyVersion: 2.7
+  TargetRubyVersion: 3.2
 Layout/EmptyLineAfterGuardClause:
   Enabled: false
 Layout/EndOfLine:
