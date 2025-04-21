@@ -1,4 +1,4 @@
-require:
+plugins:
   - rubocop-performance
   - rubocop-rake
 
@@ -17,7 +17,11 @@ AllCops:
     - '**/Rakefile'
     - '**/config.ru'
   NewCops: enable
-  TargetRubyVersion: 2.7
+  TargetRubyVersion: 3.2
+Layout/ArgumentAlignment:
+  EnforcedStyle: with_fixed_indentation
+Layout/ArrayAlignment:
+  EnforcedStyle: with_fixed_indentation
 Layout/EmptyLineAfterGuardClause:
   Enabled: false
 Layout/EndOfLine:
@@ -28,6 +32,8 @@ Layout/FirstArrayElementIndentation:
   EnforcedStyle: consistent
 Layout/FirstHashElementIndentation:
   EnforcedStyle: consistent
+Layout/LineContinuationLeadingSpace:
+  EnforcedStyle: leading
 Layout/LineEndStringConcatenationIndentation:
   EnforcedStyle: indented
 Layout/LineLength:

@@ -107,7 +107,7 @@ module Kariyon
 
     def dest_root
       case Environment.platform
-      when 'FreeBSD'
+      when :free_bsd, 'FreeBSD'
         return '/usr/local/www/apache24/data'
       else
         raise "#{Environment.platform}は未対応です。"
