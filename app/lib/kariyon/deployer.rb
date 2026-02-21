@@ -125,7 +125,7 @@ module Kariyon
     end
 
     def session_path
-      return File.join('/tmp', Package.name)
+      return File.join('/tmp', "#{Package.name}-#{Environment.name}")
     end
 
     def session
