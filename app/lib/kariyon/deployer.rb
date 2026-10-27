@@ -91,8 +91,11 @@ module Kariyon
       return File.exist?(dot_kariyon(parent))
     end
 
+    # 証明書の確認用のディレクトリ。設定（well_known_dir）にあればそれを使い、
+    # 無ければ公開先から、kariyonでもリンクでもないディレクトリを1つ探す。
     def well_known_dir
-      dirs = Dir.glob(File.join(dest_root, '*'))
+      return configured_well_known_dir if configured_well_known_dir
+      dirs = Dir.glob(File.join(dest_root, '*')).select {|f| File.directory?(f)}
       dirs.reject! {|f| File.symlink?(f)}
       dirs.reject! {|f| kariyon?(f)}
       raise "'#{dest_root}'内に対象ディレクトリが複数あります。" if 1 < dirs.count
@@ -101,8 +104,16 @@ module Kariyon
       raise "'#{dir}'がありません。" unless File.exist?(dir)
       return dir
     rescue => e
-      logger.error(error: e)
+      @logger.error(error: e)
       exit 1
+    end
+
+    def configured_well_known_dir
+      dir = @config['/well_known_dir']
+      raise "'#{dir}'がありません。" unless File.exist?(dir)
+      return dir
+    rescue Ginseng::ConfigError
+      return nil
     end
 
     def dest_root
