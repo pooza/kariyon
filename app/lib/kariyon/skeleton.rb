@@ -38,7 +38,8 @@ module Kariyon
     def link_well_known_dir
       dest = File.join(dir, '.well-known')
       return if File.exist?(dest)
-      File.symlink(Deployer.instance.well_known_dir, dest)
+      src = Deployer.instance.well_known_dir
+      File.symlink(src, dest)
       File.lchown(Environment.uid, Environment.gid, dest)
       @logger.info(action: 'link', source: src, dest: dest)
     end
