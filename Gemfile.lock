@@ -34,6 +34,17 @@ GIT
       zeitwerk (>= 2.4.0)
       zlib
 
+GIT
+  remote: https://github.com/pooza/ginseng-style.git
+  revision: 2818c5618476302e4a10454f1b621502a053f492
+  ref: 2818c5618476302e4a10454f1b621502a053f492
+  specs:
+    ginseng-style (1.1.14)
+      rubocop (~> 1.91.0)
+      rubocop-minitest (~> 0.41.0)
+      rubocop-performance (~> 1.27.0)
+      rubocop-rake (~> 0.7.1)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -123,7 +134,7 @@ GEM
       ast (~> 2.4.1)
       racc
     power_assert (2.0.5)
-    prism (1.4.0)
+    prism (1.9.0)
     public_suffix (6.0.1)
     racc (1.8.1)
     rainbow (3.1.1)
@@ -135,24 +146,28 @@ GEM
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
     ricecream (0.2.1)
-    rubocop (1.75.2)
-      json (~> 2.3)
+    rubocop (1.91.0)
+      json (>= 2.3)
       language_server-protocol (~> 3.17.0.2)
       lint_roller (~> 1.1.0)
-      parallel (~> 1.10)
+      parallel (>= 1.10)
       parser (>= 3.3.0.2)
       rainbow (>= 2.2.2, < 4.0)
       regexp_parser (>= 2.9.3, < 3.0)
-      rubocop-ast (>= 1.44.0, < 2.0)
+      rubocop-ast (>= 1.49.0, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 2.4.0, < 4.0)
-    rubocop-ast (1.44.1)
+    rubocop-ast (1.50.0)
       parser (>= 3.3.7.2)
-      prism (~> 1.4)
-    rubocop-performance (1.25.0)
+      prism (~> 1.7)
+    rubocop-minitest (0.41.0)
       lint_roller (~> 1.1)
-      rubocop (>= 1.75.0, < 2.0)
+      rubocop (>= 1.89.0, < 2.0)
       rubocop-ast (>= 1.38.0, < 2.0)
+    rubocop-performance (1.27.0)
+      lint_roller (~> 1.1)
+      rubocop (>= 1.89.0, < 2.0)
+      rubocop-ast (>= 1.47.1, < 2.0)
     rubocop-rake (0.7.1)
       lint_roller (~> 1.1)
       rubocop (>= 1.72.1)
@@ -187,15 +202,13 @@ PLATFORMS
 
 DEPENDENCIES
   ginseng-core!
+  ginseng-style!
   ricecream
-  rubocop
-  rubocop-performance
-  rubocop-rake
   singleton
   test-unit
 
 RUBY VERSION
-   ruby 3.2.8p263
+   ruby 3.4.9p82
 
 BUNDLED WITH
    2.6.8

@@ -1,0 +1,30 @@
+name: test
+on:
+  push:
+  workflow_dispatch:
+# ⚠ 手順本体は pooza/ginseng-style の composite action。版で固定しているが、
+# そこに入った変更が、このリポジトリの GITHUB_TOKEN を持って動く。既定に頼らず絞る。
+permissions:
+  contents: read
+env:
+  CI: 'true'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: ${{ matrix.ruby }}
+    strategy:
+      matrix:
+        # ⚠ 動かしている機は FreeBSD の pkg の Ruby（2026-11 時点で 3.4）。
+        # OS を上げる前の機に 3.3 が残っているので、3.3 も見る。
+        ruby:
+          - ruby:3.3
+          - ruby:3.4
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      # ⚠ 手順の正本は pooza/ginseng-style。Gemfile の ginseng-style と同じ SHA に揃える。
+      - uses: pooza/ginseng-style/.github/actions/ruby-check@2818c5618476302e4a10454f1b621502a053f492 # v1.1.14
+        with:
+          # ⚠ test/ はまだ無い。rake test は 0 件で通る
+          test: 'false'

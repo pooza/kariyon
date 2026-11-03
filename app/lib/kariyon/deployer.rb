@@ -1,6 +1,7 @@
 module Kariyon
   class Deployer
     include Singleton
+
     TIME_FORMAT = '%Y%m%d%H%M'.freeze
 
     def initialize
@@ -99,7 +100,7 @@ module Kariyon
       dirs.reject! {|f| File.symlink?(f)}
       dirs.reject! {|f| kariyon?(f)}
       raise "'#{dest_root}'内に対象ディレクトリが複数あります。" if 1 < dirs.count
-      raise "'#{dest_root}'内に対象ディレクトリがありません。" if dirs.count.zero?
+      raise "'#{dest_root}'内に対象ディレクトリがありません。" if dirs.none?
       dir = File.join(dirs.first, 'www/.well-known')
       raise "'#{dir}'がありません。" unless File.exist?(dir)
       return dir
@@ -165,7 +166,7 @@ module Kariyon
         if recent
           @real_root = File.join(Environment.dir, 'htdocs', recent.strftime(TIME_FORMAT))
         else
-          @real_root = File.join(Environment.dir, 'htdocs', Time.new.strftime(TIME_FORMAT))
+          @real_root = File.join(Environment.dir, 'htdocs', Time.now.strftime(TIME_FORMAT))
           Dir.mkdir(@real_root)
           File.chown(Environment.uid, Environment.gid, @real_root)
         end
