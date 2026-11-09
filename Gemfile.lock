@@ -73,7 +73,7 @@ GEM
     crass (1.0.6)
     csv (3.3.4)
     daemon-spawn (0.4.2)
-    date (3.4.1)
+    date (3.6.0)
     domain_name (0.6.20240107)
     drb (2.2.1)
     erb (4.0.4)
@@ -98,7 +98,8 @@ GEM
     language_server-protocol (3.17.0.4)
     lint_roller (1.1.0)
     logger (1.7.0)
-    mail (2.8.1)
+    mail (2.9.1)
+      logger
       mini_mime (>= 0.1.1)
       net-imap
       net-pop
@@ -113,14 +114,14 @@ GEM
     multi_json (1.15.0)
     multi_xml (0.7.1)
       bigdecimal (~> 3.1)
-    net-imap (0.5.15)
+    net-imap (0.6.8)
       date
       net-protocol
     net-pop (0.1.2)
       net-protocol
-    net-protocol (0.2.2)
+    net-protocol (0.4.0)
       timeout
-    net-smtp (0.5.1)
+    net-smtp (0.5.2)
       net-protocol
     netrc (0.11.0)
     nokogiri (1.19.7)
@@ -184,7 +185,7 @@ GEM
       power_assert
     time (0.4.1)
       date
-    timeout (0.4.3)
+    timeout (0.6.1)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode-display_width (3.1.4)
