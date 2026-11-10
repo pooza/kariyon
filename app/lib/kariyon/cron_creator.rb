@@ -18,8 +18,11 @@ module Kariyon
     end
 
     def create
+      # Debian の cron は root の持ち物でない cron.d のファイルを読まない（黙って無視する）。
+      raise "#{Environment.platform}では root で流してください。" if root_required? && !Process.uid.zero?
       File.write(path, contents)
       File.chmod(0o644, path)
+      File.chown(0, 0, path) if Process.uid.zero?
       @logger.info(action: 'create', file: path)
     rescue => e
       @logger.error(error: e)
@@ -33,6 +36,10 @@ module Kariyon
         PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
         * * * * * root #{src} > /dev/null
       CRON
+    end
+
+    def root_required?
+      return Environment.platform == 'Debian'
     end
 
     def src
