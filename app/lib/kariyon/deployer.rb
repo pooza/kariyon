@@ -48,6 +48,7 @@ module Kariyon
       else
         update_root_alias
       end
+      notify_switch
       @logger.info(action: 'end')
     end
 
@@ -145,16 +146,35 @@ module Kariyon
       return JSON.parse(File.read(session_path))
     end
 
+    # 切り替えたと認めてよい遅れ。これを超えたら error で残す（#306）。
+    DELAY_LIMIT = 60
+
     def session=(values)
       prev = session['recent']
       File.write(session_path, values.to_json)
-      return unless prev < session['recent']
+      @switched = !prev.nil? && !session['recent'].nil? && prev < session['recent']
+    rescue => e
+      @logger.error(error: e)
+    end
+
+    # 公開のリンクを張り替えたあとに呼ぶ。遅れには張り替えまでの時間を含め、通知の待ちは含めない。
+    def notify_switch
+      return unless @switched
+      log_delay(@recent)
       mailer = Mailer.new
       mailer.subject = "#{Environment.name} フォルダの切り替え"
       mailer.body = "#{real_root} に切り替えました。"
       mailer.deliver
     rescue => e
       @logger.error(error: e)
+    end
+
+    # 予定の時刻（フォルダ名）から、実際に切り替えた時刻までの遅れを残す。
+    def log_delay(scheduled, now = Time.now)
+      delay = (now - scheduled).round
+      entry = {action: 'switch', scheduled: scheduled.to_s, actual: now.to_s, delay:}
+      return @logger.info(entry) if delay <= DELAY_LIMIT
+      @logger.error(entry.merge(error: "切り替えが#{delay}秒遅れました。"))
     end
 
     def root_alias

@@ -1,4 +1,5 @@
 module Kariyon
+  # 古い版が置いた periodic のリンクを消す（切り替えは毎分の cron へ移した・#306）。
   class PeriodicCreator
     include Singleton
 
@@ -14,27 +15,6 @@ module Kariyon
         @logger.info(action: 'delete', link: path)
       rescue => e
         @logger.error(error: e)
-      end
-    end
-
-    def create
-      File.symlink(src, dest)
-      @logger.info(action: 'link', source: src, dest: dest)
-    rescue => e
-      @logger.error(error: e)
-      exit 1
-    end
-
-    def src
-      return File.join(Environment.dir, 'bin/kariyon.rb')
-    end
-
-    def dest
-      case Environment.platform
-      when :free_bsd, 'FreeBSD'
-        return File.join(destroot, "900.kariyon-#{Environment.name}")
-      when 'Debian'
-        return File.join(destroot, "kariyon-#{Environment.name.tr('.', '-')}")
       end
     end
 
