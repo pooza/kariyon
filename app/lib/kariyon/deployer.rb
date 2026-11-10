@@ -48,6 +48,7 @@ module Kariyon
       else
         update_root_alias
       end
+      notify_switch
       @logger.info(action: 'end')
     end
 
@@ -151,9 +152,15 @@ module Kariyon
     def session=(values)
       prev = session['recent']
       File.write(session_path, values.to_json)
-      return if prev.nil? || session['recent'].nil?
-      return unless prev < session['recent']
-      log_delay(values[:recent])
+      @switched = !prev.nil? && !session['recent'].nil? && prev < session['recent']
+    rescue => e
+      @logger.error(error: e)
+    end
+
+    # 公開のリンクを張り替えたあとに呼ぶ。遅れには張り替えまでの時間を含め、通知の待ちは含めない。
+    def notify_switch
+      return unless @switched
+      log_delay(@recent)
       mailer = Mailer.new
       mailer.subject = "#{Environment.name} フォルダの切り替え"
       mailer.body = "#{real_root} に切り替えました。"
