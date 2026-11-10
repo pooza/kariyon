@@ -9,6 +9,10 @@ ENV['BUNDLE_GEMFILE'] ||= File.join(dir, 'Gemfile')
 Dir.chdir(dir)
 require 'kariyon'
 module Kariyon
-  sleep 3
-  Deployer.instance.update
+  # 毎分の cron から呼ばれる（#306）。前の回が終わっていなければ、この回は何もしない。
+  lock_path = File.join('/tmp', "#{Package.name}-#{Environment.name}.lock")
+  File.open(lock_path, File::RDWR | File::CREAT, 0o644) do |lock|
+    exit unless lock.flock(File::LOCK_EX | File::LOCK_NB)
+    Deployer.instance.update
+  end
 end

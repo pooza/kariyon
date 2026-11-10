@@ -145,16 +145,29 @@ module Kariyon
       return JSON.parse(File.read(session_path))
     end
 
+    # 切り替えたと認めてよい遅れ。これを超えたら error で残す（#306）。
+    DELAY_LIMIT = 60
+
     def session=(values)
       prev = session['recent']
       File.write(session_path, values.to_json)
+      return if prev.nil? || session['recent'].nil?
       return unless prev < session['recent']
+      log_delay(values[:recent])
       mailer = Mailer.new
       mailer.subject = "#{Environment.name} フォルダの切り替え"
       mailer.body = "#{real_root} に切り替えました。"
       mailer.deliver
     rescue => e
       @logger.error(error: e)
+    end
+
+    # 予定の時刻（フォルダ名）から、実際に切り替えた時刻までの遅れを残す。
+    def log_delay(scheduled, now = Time.now)
+      delay = (now - scheduled).round
+      entry = {action: 'switch', scheduled: scheduled.to_s, actual: now.to_s, delay:}
+      return @logger.info(entry) if delay <= DELAY_LIMIT
+      @logger.error(entry.merge(error: "切り替えが#{delay}秒遅れました。"))
     end
 
     def root_alias
