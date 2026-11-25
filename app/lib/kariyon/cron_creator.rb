@@ -29,12 +29,13 @@ module Kariyon
       exit 1
     end
 
+    # 標準エラーも捨てる。落ちると毎分メールになるため。エラーは Logger が syslog にも残す。
     def contents
       return <<~CRON
         # kariyon #{Environment.name}（rake kariyon:cron:init が置いた。手で直さない）
         SHELL=/bin/sh
         PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
-        * * * * * root #{src} > /dev/null
+        * * * * * root #{src} > /dev/null 2>&1
       CRON
     end
 
